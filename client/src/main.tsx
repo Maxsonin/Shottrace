@@ -5,7 +5,7 @@ import AuthProvider from './providers/AuthProvider.tsx';
 
 import './index.css';
 
-import App from './App.tsx';
+import HomePage from './pages/Home/HomePage.tsx';
 import Books from './pages/Books/BooksPage.tsx';
 import Lists from './pages/Lists/ListsPage.tsx';
 import NotFoundPage from './pages/NotFoundPage/NotFoundPage.tsx';
@@ -17,7 +17,7 @@ const router = createBrowserRouter([
     path: '/',
     element: <MainLayout />,
     children: [
-      { index: true, element: <App /> },
+      { index: true, element: <HomePage /> },
       { path: 'books', element: <Books /> },
       { path: 'lists', element: <Lists /> },
       { path: 'book/:id', element: <Book /> },

@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import Modal from './Modal';
-import PopUpFieldset from './PopUpFieldset';
+import Modal from './UI/Modal';
+import PopUpFieldset from './UI/PopUpFieldset';
 import { useAuth } from '../providers/AuthProvider';
 import { Link } from 'react-router-dom';
 import SignInForm from './SignInForm';
@@ -13,37 +13,45 @@ function Navbar() {
 
   return (
     <>
-      <nav className="flex items-center justify-between px-6 py-4">
-        <div className="font-bold text-lg cursor-pointer">Booklogue</div>
+      <nav className="fixed top-0 left-0 right-0 z-50 text-white px-6 py-4">
+        <div className="flex items-center justify-between max-w-7xl mx-auto">
+          <div className="font-bold text-lg cursor-pointer">Booklogue</div>
 
-        <ul className="flex space-x-6 font-bold text-white">
-          {!user ? (
-            <>
-              <li
-                className="cursor-pointer hover:text-gray-900"
-                onClick={() => setOpenSignIn(true)}
-              >
-                SIGN IN
+          <ul className="flex space-x-6 font-bold">
+            {!user ? (
+              <>
+                <li
+                  className="cursor-pointer hover:text-gray-300"
+                  onClick={() => setOpenSignIn(true)}
+                >
+                  SIGN IN
+                </li>
+                <li
+                  className="cursor-pointer hover:text-gray-300"
+                  onClick={() => setOpenSignUp(true)}
+                >
+                  CREATE ACCOUNT
+                </li>
+              </>
+            ) : (
+              <li>
+                <Link to={`/${user.username}`} className="hover:text-gray-300">
+                  {user.username}
+                </Link>
               </li>
-              <li
-                className="cursor-pointer hover:text-gray-900"
-                onClick={() => setOpenSignUp(true)}
-              >
-                CREATE ACCOUNT
-              </li>
-            </>
-          ) : (
+            )}
             <li>
-              <Link to={`/${user.username}`}>{user.username}</Link>
+              <Link to="/books" className="cursor-pointer hover:text-gray-300">
+                BOOKS
+              </Link>
             </li>
-          )}
-          <Link to="/books" className="cursor-pointer hover:text-gray-900">
-            BOOKS
-          </Link>
-          <Link to="/lists" className="cursor-pointer hover:text-gray-900">
-            LISTS
-          </Link>
-        </ul>
+            <li>
+              <Link to="/lists" className="cursor-pointer hover:text-gray-300">
+                LISTS
+              </Link>
+            </li>
+          </ul>
+        </div>
       </nav>
 
       {openSignIn && (
