@@ -25,7 +25,7 @@ function HomePage() {
       </section>
 
       <section className="relative max-w-7xl">
-        <p>BOOKLOGUE LETS YOU...</p>
+        <p>Shottrace lets you...</p>
       </section>
 
       <section className="relative max-w-7xl">

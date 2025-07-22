@@ -6,10 +6,10 @@ import AuthProvider from './providers/AuthProvider.tsx';
 import './index.css';
 
 import HomePage from './pages/Home/HomePage.tsx';
-import Books from './pages/Books/BooksPage.tsx';
+import MoviesPage from './pages/Movies/MoviesPage.tsx';
 import Lists from './pages/Lists/ListsPage.tsx';
 import NotFoundPage from './pages/NotFoundPage/NotFoundPage.tsx';
-import Book from './pages/Book/BookPage.tsx';
+import MoviePage from './pages/Movie/MoviePage.tsx';
 import MainLayout from './layouts/MainLayout.tsx';
 
 const router = createBrowserRouter([
@@ -18,9 +18,9 @@ const router = createBrowserRouter([
     element: <MainLayout />,
     children: [
       { index: true, element: <HomePage /> },
-      { path: 'books', element: <Books /> },
+      { path: 'movies', element: <MoviesPage /> },
       { path: 'lists', element: <Lists /> },
-      { path: 'book/:id', element: <Book /> },
+      { path: 'movie/:id', element: <MoviePage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

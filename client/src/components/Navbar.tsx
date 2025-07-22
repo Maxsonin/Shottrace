@@ -15,39 +15,50 @@ function Navbar() {
     <>
       <nav className="fixed top-0 left-0 right-0 z-50 text-white px-6 py-4">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <div className="font-bold text-lg cursor-pointer">Booklogue</div>
+          <div className="uppercase font-bold text-lg cursor-pointer">
+            Shottrace
+          </div>
 
           <ul className="flex space-x-6 font-bold">
             {!user ? (
               <>
                 <li
-                  className="cursor-pointer hover:text-gray-300"
+                  className="uppercase cursor-pointer hover:text-gray-300"
                   onClick={() => setOpenSignIn(true)}
                 >
-                  SIGN IN
+                  Sign In
                 </li>
                 <li
-                  className="cursor-pointer hover:text-gray-300"
+                  className="uppercase cursor-pointer hover:text-gray-300"
                   onClick={() => setOpenSignUp(true)}
                 >
-                  CREATE ACCOUNT
+                  Create Account
                 </li>
               </>
             ) : (
               <li>
-                <Link to={`/${user.username}`} className="hover:text-gray-300">
+                <Link
+                  to={`/${user.username}`}
+                  className="uppercase *:hover:text-gray-300"
+                >
                   {user.username}
                 </Link>
               </li>
             )}
             <li>
-              <Link to="/books" className="cursor-pointer hover:text-gray-300">
-                BOOKS
+              <Link
+                to="/movies"
+                className="uppercase cursor-pointer hover:text-gray-300"
+              >
+                Movies
               </Link>
             </li>
             <li>
-              <Link to="/lists" className="cursor-pointer hover:text-gray-300">
-                LISTS
+              <Link
+                to="/lists"
+                className="uppercase cursor-pointer hover:text-gray-300"
+              >
+                Lists
               </Link>
             </li>
           </ul>
@@ -64,7 +75,7 @@ function Navbar() {
         <Modal
           open={openSignUp}
           onClose={() => setOpenSignUp(false)}
-          title="JOIN BOOKLOGUE"
+          title="Join Shottrace"
         >
           <SignUpForm onClose={() => setOpenSignUp(false)} />
         </Modal>

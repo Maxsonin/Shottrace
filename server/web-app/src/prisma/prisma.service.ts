@@ -10,7 +10,7 @@ export class PrismaService
     super({
       datasources: {
         db: {
-          url: 'postgresql://admin:admin@localhost:5433/booklogue', // TODO: env
+          url: 'postgresql://admin:admin@localhost:5433/shottrace', // TODO: move to env
         },
       },
     });
