@@ -4,7 +4,7 @@ import type { Movie, MoviesStats } from '../../types/movie.type';
 
 type MovieWithStats = Movie & MoviesStats;
 
-const TMDB_TOKEN = import.meta.env.TMDB_TOKEN;
+const TMDB_TOKEN = import.meta.env.VITE_TMDB_TOKEN;
 
 function MoviePage() {
   const { id } = useParams<{ id: string }>();
