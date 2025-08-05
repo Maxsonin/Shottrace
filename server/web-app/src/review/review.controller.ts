@@ -23,7 +23,7 @@ export class ReviewController {
   }
 
   @Public()
-  @Get(':movieId')
+  @Get(':movieId/public')
   findAll(
     @Param('movieId') movieId: number,
     @Query('limit') limit = '10',
@@ -34,6 +34,11 @@ export class ReviewController {
       +limit,
       cursor ? +cursor : undefined,
     );
+  }
+
+  @Get(':movieId/user')
+  findUserReview(@Param('movieId') movieId: number, @User() user: UserEntity) {
+    return this.reviewService.findUserReview(+movieId, user);
   }
 
   @Delete(':id')

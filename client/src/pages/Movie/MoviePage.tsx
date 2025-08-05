@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import type { Movie, MoviesStats } from '../../types/movie.type';
+import { useAuth } from '../../providers/AuthProvider';
+import api from '../../api/axios';
 
 type MovieWithStats = Movie & MoviesStats;
 
@@ -39,39 +41,60 @@ function MoviePage() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [nextCursor, setNextCursor] = useState<number | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [userReview, setUserReview] = useState<Review | null>(null);
+
+  const { user } = useAuth();
 
   const fetchReviews = async (cursor: number | null = null) => {
     const cursorParam = cursor ? `&cursor=${cursor}` : '';
-    const response = await fetch(
-      `http://localhost:3000/api/reviews/${id}?limit=10${cursorParam}`
+    const response = await api.get(
+      `/reviews/${id}/public?limit=10${cursorParam}`
     );
-    const data = await response.json();
-    console.log(data);
-    setReviews(data.data);
+    const data = response.data;
+
+    if (cursor) {
+      setReviews((prev) => [...prev, ...(data.data || [])]);
+    } else {
+      setReviews(data.data || []);
+    }
+
     setNextCursor(data.nextCursor || null);
   };
 
-  const renderComments = (comments: Comment[], level = 0) => {
-    return comments.map((comment) => (
-      <div
-        key={comment.id}
-        style={{
-          marginLeft: `${level * 20}px`,
-          borderLeft: '2px solid #ddd',
-          paddingLeft: '10px',
-          marginTop: '0.5rem',
-        }}
-      >
-        <p>
-          <strong>{comment.commenter?.username || 'Hidden'}</strong>
-        </p>
-        <p>{comment.content}</p>
+  const fetchUserReview = async () => {
+    try {
+      const response = await api.get(`/reviews/${id}/user`);
+      setUserReview(response.data);
+    } catch (err) {
+      setUserReview(null);
+    }
+  };
 
-        {comment.children && comment.children.length > 0 && (
-          <div>{renderComments(comment.children, level + 1)}</div>
-        )}
-      </div>
-    ));
+  const renderComments = (comments: Comment[], level = 0) => {
+    return comments ? (
+      <>
+        {comments.map((comment) => (
+          <div
+            key={comment.id}
+            style={{
+              marginLeft: `${level * 20}px`,
+              borderLeft: '2px solid #ddd',
+              paddingLeft: '10px',
+              marginTop: '0.5rem',
+            }}
+          >
+            <p>
+              <strong>{comment.commenter?.username || 'Hidden'}</strong>
+            </p>
+            <p>{comment.content}</p>
+
+            {comment.children && comment.children.length > 0 && (
+              <div>{renderComments(comment.children, level + 1)}</div>
+            )}
+          </div>
+        ))}
+      </>
+    ) : null;
   };
 
   useEffect(() => {
@@ -79,9 +102,6 @@ function MoviePage() {
 
     setLoading(true);
     setError(null);
-
-    setReviews([]);
-    fetchReviews();
 
     fetch(`https://api.themoviedb.org/3/movie/${id}`, {
       headers: {
@@ -99,8 +119,8 @@ function MoviePage() {
           title: data.title,
           poster_path: data.poster_path,
           overview: data.overview,
-          likedCount: Math.floor(Math.random() * 1000), // dummy data
-          watchedCount: Math.floor(Math.random() * 1000), // dummy data
+          likedCount: Math.floor(Math.random() * 1000),
+          watchedCount: Math.floor(Math.random() * 1000),
         };
         setMovie(movieWithStats);
         setLoading(false);
@@ -110,6 +130,18 @@ function MoviePage() {
         setLoading(false);
       });
   }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+    setReviews([]);
+    setNextCursor(null);
+    fetchReviews();
+  }, [id]);
+
+  useEffect(() => {
+    if (!id || !user) return;
+    fetchUserReview();
+  }, [id, user]);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
@@ -125,20 +157,50 @@ function MoviePage() {
       <p>{movie.overview}</p>
       <div>Liked: {movie.likedCount}</div>
       <div>Watched: {movie.watchedCount}</div>
-
-      {reviews.map((review) => (
-        <div key={review.id} style={{ marginTop: '1rem' }}>
+      <h2>Reviews</h2>
+      {userReview ? (
+        <div
+          key={userReview.id}
+          style={{
+            marginTop: '1rem',
+            backgroundColor: 'green',
+            border: '1px solid white',
+            padding: '1rem',
+          }}
+        >
           <p>
-            <strong>{review.reviewer?.username}</strong> rated {review.stars}⭐
+            <strong>{userReview.reviewer?.username}</strong> rated{' '}
+            {userReview.stars}⭐
           </p>
-          <p>{review.content}</p>
+          <p>{userReview.content}</p>
 
           <div style={{ marginTop: '1rem' }}>
-            {renderComments(review.comments)}
+            {renderComments(userReview.comments)}
           </div>
         </div>
-      ))}
+      ) : user ? (
+        <button className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-xl text-lg mb-4">
+          Write a review
+        </button>
+      ) : (
+        <h1>Log in to write a review</h1>
+      )}
 
+      {reviews
+        .filter((review) => review.id !== userReview?.id)
+        .map((review) => (
+          <div key={review.id} style={{ marginTop: '1rem' }}>
+            <p>
+              <strong>{review.reviewer?.username}</strong> rated {review.stars}
+              ⭐
+            </p>
+            <p>{review.content}</p>
+
+            <div style={{ marginTop: '1rem' }}>
+              {renderComments(review.comments)}
+            </div>
+          </div>
+        ))}
       {nextCursor && (
         <button
           onClick={() => {

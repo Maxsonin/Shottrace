@@ -34,6 +34,8 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const initAuth = async () => {
       try {
         const userResponse = await api.get('/auth/me');
+        console.log('/auth/me');
+
         setUser(userResponse.data);
         console.log(userResponse.data);
       } catch (err) {
@@ -54,6 +56,8 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       try {
         const res = await api.get('/auth/me');
+        console.log('/auth/me');
+
         setUser(res.data);
       } catch (err) {
         setUser(null);
@@ -70,9 +74,9 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useLayoutEffect(() => {
     const authInterceptor = api.interceptors.request.use((config) => {
-      console.log(1);
       if (tokenRef.current && !config._retry) {
         config.headers.Authorization = `Bearer ${tokenRef.current}`;
+        console.log('ATTACHING ACCESS TOKEN');
       }
       return config;
     });
@@ -86,7 +90,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const refreshInterceptor = api.interceptors.response.use(
       (response) => response,
       async (err) => {
-        console.log(2);
         const originalRequest = err.config;
 
         if (originalRequest.url === '/auth/refresh') {
@@ -102,11 +105,13 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         ) {
           originalRequest._retry = true;
           try {
+            console.log('/auth/refresh');
             const response = await api.get('/auth/refresh');
 
             setToken(response.data.accessToken);
 
             originalRequest.headers.Authorization = `Bearer ${response.data.accessToken}`;
+            console.log('ATTACHING ACCESS TOKEN');
 
             return api(originalRequest);
           } catch (error) {

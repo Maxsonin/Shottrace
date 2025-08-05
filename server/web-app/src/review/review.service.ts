@@ -47,35 +47,7 @@ export class ReviewService {
     });
 
     for (const review of reviews) {
-      const flatComments: FlatComment[] = await this.prisma.comment.findMany({
-        where: {
-          OR: [
-            { reviewId: review.id },
-            {
-              parent: {
-                reviewId: review.id,
-              },
-            },
-          ],
-        },
-        orderBy: {
-          rating: 'desc',
-        },
-        select: {
-          id: true,
-          content: true,
-          rating: true,
-          deleted: true,
-          parentId: true,
-          commenter: {
-            select: {
-              username: true,
-            },
-          },
-        },
-      });
-
-      review['comments'] = this.buildCommentTree(flatComments);
+      await this.attachCommentsToReview(review);
     }
 
     const nextCursor =
@@ -85,6 +57,58 @@ export class ReviewService {
       data: reviews,
       nextCursor,
     };
+  }
+
+  async findUserReview(movieId: number, user: UserEntity) {
+    const userReview = await this.prisma.review.findFirst({
+      where: {
+        reviewerId: user.userId,
+        movieId,
+      },
+      include: {
+        reviewer: {
+          select: { username: true },
+        },
+      },
+    });
+
+    if (userReview) {
+      await this.attachCommentsToReview(userReview);
+    }
+
+    return userReview;
+  }
+
+  private async attachCommentsToReview(review: any): Promise<void> {
+    const flatComments = await this.prisma.comment.findMany({
+      where: {
+        OR: [
+          { reviewId: review.id },
+          {
+            parent: {
+              reviewId: review.id,
+            },
+          },
+        ],
+      },
+      orderBy: {
+        rating: 'desc',
+      },
+      select: {
+        id: true,
+        content: true,
+        rating: true,
+        deleted: true,
+        parentId: true,
+        commenter: {
+          select: {
+            username: true,
+          },
+        },
+      },
+    });
+
+    review['comments'] = this.buildCommentTree(flatComments);
   }
 
   private buildCommentTree(comments: FlatComment[]): NestedComment[] {
