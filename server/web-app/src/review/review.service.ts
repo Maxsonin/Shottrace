@@ -11,7 +11,7 @@ interface FlatComment {
   parentId: number | null;
   commenter: {
     username: string;
-  };
+  } | null;
 }
 
 interface NestedComment extends FlatComment {
@@ -33,11 +33,16 @@ export class ReviewService {
     });
   }
 
-  async findAll(movieId: number) {
+  async findAll(movieId: number, limit = 10, cursor?: number) {
     const reviews = await this.prisma.review.findMany({
       where: { movieId },
+      take: limit,
+      ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
+      orderBy: [{ rating: 'desc' }, { id: 'desc' }],
       include: {
-        reviewer: { select: { username: true } },
+        reviewer: {
+          select: { username: true },
+        },
       },
     });
 
@@ -53,20 +58,33 @@ export class ReviewService {
             },
           ],
         },
+        orderBy: {
+          rating: 'desc',
+        },
         select: {
           id: true,
           content: true,
           rating: true,
           deleted: true,
           parentId: true,
-          commenter: { select: { username: true } },
+          commenter: {
+            select: {
+              username: true,
+            },
+          },
         },
       });
 
       review['comments'] = this.buildCommentTree(flatComments);
     }
 
-    return reviews;
+    const nextCursor =
+      reviews.length === limit ? reviews[reviews.length - 1].id : null;
+
+    return {
+      data: reviews,
+      nextCursor,
+    };
   }
 
   private buildCommentTree(comments: FlatComment[]): NestedComment[] {
@@ -74,7 +92,16 @@ export class ReviewService {
     const roots: NestedComment[] = [];
 
     for (const comment of comments) {
-      map.set(comment.id, { ...comment, children: [] });
+      const normalizedComment: NestedComment = {
+        ...comment,
+        content: comment.deleted
+          ? 'User deleted this comment'
+          : comment.content,
+        commenter: comment.deleted ? null : comment.commenter,
+        children: [],
+      };
+
+      map.set(comment.id, normalizedComment);
     }
 
     for (const comment of comments) {

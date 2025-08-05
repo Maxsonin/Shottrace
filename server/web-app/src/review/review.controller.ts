@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ReviewService } from './review.service';
 import { CreateReviewDto } from './dtos/review.dto';
 import { UserEntity } from 'src/auth/types/auth.type';
@@ -16,8 +24,16 @@ export class ReviewController {
 
   @Public()
   @Get(':movieId')
-  findAll(@Param('movieId') movieId: number) {
-    return this.reviewService.findAll(+movieId);
+  findAll(
+    @Param('movieId') movieId: number,
+    @Query('limit') limit = '10',
+    @Query('cursor') cursor?: string,
+  ) {
+    return this.reviewService.findAll(
+      +movieId,
+      +limit,
+      cursor ? +cursor : undefined,
+    );
   }
 
   @Delete(':id')
