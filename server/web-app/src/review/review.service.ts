@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateReviewDto } from './dtos/review.dto';
+import { CreateReviewDto, UpdateReviewDto } from './dtos/review.dto';
 import { UserEntity } from 'src/auth/types/auth.type';
 
 interface FlatComment {
   id: number;
   content: string;
   rating: number;
-  deleted: boolean;
   parentId: number | null;
   commenter: {
     username: string;
@@ -98,7 +97,6 @@ export class ReviewService {
         id: true,
         content: true,
         rating: true,
-        deleted: true,
         parentId: true,
         commenter: {
           select: {
@@ -116,16 +114,7 @@ export class ReviewService {
     const roots: NestedComment[] = [];
 
     for (const comment of comments) {
-      const normalizedComment: NestedComment = {
-        ...comment,
-        content: comment.deleted
-          ? 'User deleted this comment'
-          : comment.content,
-        commenter: comment.deleted ? null : comment.commenter,
-        children: [],
-      };
-
-      map.set(comment.id, normalizedComment);
+      map.set(comment.id, { ...comment, children: [] });
     }
 
     for (const comment of comments) {
@@ -144,10 +133,16 @@ export class ReviewService {
     return roots;
   }
 
-  remove(id: number) {
+  update(data: UpdateReviewDto) {
     return this.prisma.review.update({
+      where: { id: data.reviewId },
+      data: { content: data.content, stars: data.stars },
+    });
+  }
+
+  remove(id: number) {
+    return this.prisma.review.delete({
       where: { id },
-      data: { deleted: true },
     });
   }
 }

@@ -5,10 +5,11 @@ import {
   Get,
   Param,
   Post,
+  Put,
   Query,
 } from '@nestjs/common';
 import { ReviewService } from './review.service';
-import { CreateReviewDto } from './dtos/review.dto';
+import { CreateReviewDto, UpdateReviewDto } from './dtos/review.dto';
 import { UserEntity } from 'src/auth/types/auth.type';
 import { User } from 'src/common/decorators/user.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
@@ -41,8 +42,14 @@ export class ReviewController {
     return this.reviewService.findUserReview(+movieId, user);
   }
 
+  @Put()
+  update(@Body() data: UpdateReviewDto) {
+    console.log(data);
+    return this.reviewService.update(data);
+  }
+
   @Delete(':id')
-  remove(@Param('id') id: number) {
+  remove(@Param('id') id: string) {
     return this.reviewService.remove(+id);
   }
 }
