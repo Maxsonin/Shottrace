@@ -1,0 +1,18 @@
+name: CI-Client
+
+on:
+  pull_request:
+    paths:
+      - 'client/**'
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client/my-react-app-here
+    steps:
+      - name: Skip React CI
+        run: echo "No React CI yet"
