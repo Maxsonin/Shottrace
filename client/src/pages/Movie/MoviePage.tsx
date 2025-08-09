@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import type { Movie, MoviesStats } from '../../types/movie.type';
 import { useAuth } from '../../providers/AuthProvider';
 import api from '../../api/axios';
+import ReviewForm from '../../components/ReviewForm';
 
 type MovieWithStats = Movie & MoviesStats;
 
@@ -12,11 +13,10 @@ type Comment = {
   id: number;
   content: string;
   rating: number;
-  deleted: boolean;
   parentId: number | null;
   commenter: {
     username: string;
-  } | null;
+  };
   children: Comment[];
 };
 
@@ -25,10 +25,9 @@ type Review = {
   content: string;
   stars: number;
   rating: number;
-  deleted: boolean;
   reviewer: {
     username: string;
-  } | null;
+  };
   comments: Comment[];
 };
 
@@ -43,9 +42,13 @@ function MoviePage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [userReview, setUserReview] = useState<Review | null>(null);
 
+  const [writeReview, setWriteReview] = useState(false);
+  const [editReview, setEditReview] = useState(false);
+
   const { user } = useAuth();
 
   const fetchReviews = async (cursor: number | null = null) => {
+    if (!id) return;
     const cursorParam = cursor ? `&cursor=${cursor}` : '';
     const response = await api.get(
       `/reviews/${id}/public?limit=10${cursorParam}`
@@ -62,10 +65,45 @@ function MoviePage() {
   };
 
   const fetchUserReview = async () => {
+    if (!id) return;
     try {
       const response = await api.get(`/reviews/${id}/user`);
       setUserReview(response.data);
-    } catch (err) {
+    } catch {
+      setUserReview(null);
+    }
+  };
+
+  const addOrUpdateUserReview = async (data: {
+    reviewId?: string | number;
+    movieId?: string;
+    content: string;
+    stars: number;
+  }) => {
+    try {
+      if (data.reviewId) {
+        // Update review
+        const response = await api.put(`/reviews`, data);
+        setUserReview(response.data);
+        setEditReview(false);
+      } else if (data.movieId) {
+        // Add new review
+        const response = await api.post(`/reviews`, data);
+        setUserReview(response.data);
+        setWriteReview(false);
+      } else {
+        throw new Error('Missing reviewId or movieId');
+      }
+    } catch {
+      setUserReview(null);
+    }
+  };
+
+  const deleteUserReview = async (id: number) => {
+    try {
+      await api.delete(`/reviews/${id}`);
+      setUserReview(null);
+    } catch {
       setUserReview(null);
     }
   };
@@ -84,7 +122,7 @@ function MoviePage() {
             }}
           >
             <p>
-              <strong>{comment.commenter?.username || 'Hidden'}</strong>
+              <strong>{comment.commenter.username}</strong>
             </p>
             <p>{comment.content}</p>
 
@@ -157,31 +195,68 @@ function MoviePage() {
       <p>{movie.overview}</p>
       <div>Liked: {movie.likedCount}</div>
       <div>Watched: {movie.watchedCount}</div>
-      <h2>Reviews</h2>
-      {userReview ? (
-        <div
-          key={userReview.id}
-          style={{
-            marginTop: '1rem',
-            backgroundColor: 'green',
-            border: '1px solid white',
-            padding: '1rem',
-          }}
-        >
-          <p>
-            <strong>{userReview.reviewer?.username}</strong> rated{' '}
-            {userReview.stars}⭐
-          </p>
-          <p>{userReview.content}</p>
 
-          <div style={{ marginTop: '1rem' }}>
-            {renderComments(userReview.comments)}
-          </div>
-        </div>
-      ) : user ? (
-        <button className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-xl text-lg mb-4">
-          Write a review
-        </button>
+      <h2>Reviews</h2>
+      {user ? (
+        userReview ? (
+          editReview ? (
+            <ReviewForm
+              onSubmit={addOrUpdateUserReview}
+              onClose={() => setEditReview(false)}
+              data={{
+                reviewId: userReview.id,
+                initialContent: userReview.content,
+                initialStars: userReview.stars,
+              }}
+            />
+          ) : (
+            <div
+              key={userReview.id}
+              style={{
+                marginTop: '1rem',
+                backgroundColor: 'green',
+                border: '1px solid white',
+                padding: '1rem',
+              }}
+            >
+              <p>
+                <strong>{userReview.reviewer?.username}</strong> rated{' '}
+                {userReview.stars}⭐
+                <button
+                  className="bg-amber-500 cursor-pointer mr-1"
+                  onClick={() => setEditReview(true)}
+                >
+                  Edit
+                </button>
+                <button
+                  className="bg-red-500 cursor-pointer"
+                  onClick={() => deleteUserReview(userReview.id)}
+                >
+                  Delete
+                </button>
+              </p>
+              <p>{userReview.content}</p>
+              <div style={{ marginTop: '1rem' }}>
+                {renderComments(userReview.comments)}
+              </div>
+            </div>
+          )
+        ) : writeReview ? (
+          <ReviewForm
+            onSubmit={addOrUpdateUserReview}
+            onClose={() => setWriteReview(false)}
+            data={{
+              movieId: id,
+            }}
+          />
+        ) : (
+          <button
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-xl text-lg mb-4"
+            onClick={() => setWriteReview(true)}
+          >
+            Write a review
+          </button>
+        )
       ) : (
         <h1>Log in to write a review</h1>
       )}
@@ -191,16 +266,15 @@ function MoviePage() {
         .map((review) => (
           <div key={review.id} style={{ marginTop: '1rem' }}>
             <p>
-              <strong>{review.reviewer?.username}</strong> rated {review.stars}
-              ⭐
+              <strong>{review.reviewer.username}</strong> rated {review.stars}⭐
             </p>
             <p>{review.content}</p>
-
             <div style={{ marginTop: '1rem' }}>
               {renderComments(review.comments)}
             </div>
           </div>
         ))}
+
       {nextCursor && (
         <button
           onClick={() => {

@@ -6,7 +6,7 @@ const CloseButton = ({ onClick }: CloseButtonProps) => {
   return (
     <button
       onClick={onClick}
-      className={`absolute top-2 right-2 p-1 rounded-lg text-gray-400 hover:text-gray-600 `}
+      className={`flex text-gray-400 hover:text-gray-600 `}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
