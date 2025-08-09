@@ -32,31 +32,30 @@ model Review {
   stars     Float
   rating    Int      @default(0)
   movieId   Int // TMDB ID
-  deleted   Boolean  @default(false) // Show same things but not specify the user
 
-  reviewer   User @relation(fields: [reviewerId], references: [id])
+  reviewer   User @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
   reviewerId Int
 
-  comments Comment[]
+  comments Comment[] @relation("ReviewComments")
   votes    Vote[]
 
   @@map("reviews")
 }
 
 model Comment {
-  id          Int      @id @default(autoincrement())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  content     String
-  rating      Int      @default(0)
-  deleted     Boolean  @default(false) // Show same things but not specify the user and what he commented
-  commenter   User     @relation(fields: [commenterId], references: [id])
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  content   String
+  rating    Int      @default(0)
+
+  commenter   User @relation(fields: [commenterId], references: [id], onDelete: Cascade)
   commenterId Int
 
-  review   Review? @relation(fields: [reviewId], references: [id])
+  review   Review? @relation("ReviewComments", fields: [reviewId], references: [id], onDelete: Cascade)
   reviewId Int?
 
-  parent   Comment? @relation("CommentToComment", fields: [parentId], references: [id])
+  parent   Comment? @relation("CommentToComment", fields: [parentId], references: [id], onDelete: Cascade)
   parentId Int?
 
   children Comment[] @relation("CommentToComment")
@@ -69,13 +68,13 @@ model Comment {
 model Vote {
   id     Int  @id @default(autoincrement())
   value  Int // 1 or -1 for up/down
-  user   User @relation(fields: [userId], references: [id])
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId Int
 
-  review   Review? @relation(fields: [reviewId], references: [id])
+  review   Review? @relation(fields: [reviewId], references: [id], onDelete: Cascade)
   reviewId Int?
 
-  comment   Comment? @relation(fields: [commentId], references: [id])
+  comment   Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
   commentId Int?
 
   @@unique([userId, reviewId, commentId])
