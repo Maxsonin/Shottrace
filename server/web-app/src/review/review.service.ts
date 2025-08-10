@@ -1,19 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateReviewDto, UpdateReviewDto } from './dtos/review.dto';
-import { UserEntity } from 'src/auth/types/auth.type';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateReviewDto } from './dto/create-review.dto';
+import { UserEntity } from '../auth/types/auth.type';
+import { UpdateReviewDto } from './dto/update-review.dto';
+import { Review } from '@prisma/client';
 
-interface FlatComment {
+interface CleanComment {
   id: number;
   content: string;
   rating: number;
   parentId: number | null;
   commenter: {
     username: string;
-  } | null;
+  };
 }
 
-interface NestedComment extends FlatComment {
+interface NestedComment extends CleanComment {
   children: NestedComment[];
 }
 
@@ -21,14 +23,27 @@ interface NestedComment extends FlatComment {
 export class ReviewService {
   constructor(private prisma: PrismaService) {}
 
-  create(user: UserEntity, dto: CreateReviewDto) {
+  create(userId: number, dto: CreateReviewDto) {
     return this.prisma.review.create({
       data: {
+        reviewerId: userId,
+        movieId: dto.movieId,
         content: dto.content,
         stars: dto.stars,
-        movieId: dto.movieId,
-        reviewerId: user.userId,
       },
+    });
+  }
+
+  update(id: number, data: UpdateReviewDto) {
+    return this.prisma.review.update({
+      where: { id },
+      data: { content: data.content, stars: data.stars },
+    });
+  }
+
+  remove(id: number) {
+    return this.prisma.review.delete({
+      where: { id },
     });
   }
 
@@ -37,7 +52,7 @@ export class ReviewService {
       where: { movieId },
       take: limit,
       ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
-      orderBy: [{ rating: 'desc' }, { id: 'desc' }],
+      orderBy: [{ rating: 'desc' }, { createdAt: 'desc' }, { id: 'desc' }],
       include: {
         reviewer: {
           select: { username: true },
@@ -49,6 +64,7 @@ export class ReviewService {
       await this.attachCommentsToReview(review);
     }
 
+    // Check if there are more reviews
     const nextCursor =
       reviews.length === limit ? reviews[reviews.length - 1].id : null;
 
@@ -58,10 +74,10 @@ export class ReviewService {
     };
   }
 
-  async findUserReview(movieId: number, user: UserEntity) {
+  async findMyReview(movieId: number, userId: number) {
     const userReview = await this.prisma.review.findFirst({
       where: {
-        reviewerId: user.userId,
+        reviewerId: userId,
         movieId,
       },
       include: {
@@ -78,17 +94,15 @@ export class ReviewService {
     return userReview;
   }
 
-  private async attachCommentsToReview(review: any): Promise<void> {
-    const flatComments = await this.prisma.comment.findMany({
+  findOne(id: number) {
+    return this.prisma.review.findUnique({ where: { id } });
+  }
+
+  // --- Comments logic ---
+  private async attachCommentsToReview(review: Review) {
+    const flatComments: CleanComment[] = await this.prisma.comment.findMany({
       where: {
-        OR: [
-          { reviewId: review.id },
-          {
-            parent: {
-              reviewId: review.id,
-            },
-          },
-        ],
+        reviewId: review.id,
       },
       orderBy: {
         rating: 'desc',
@@ -106,43 +120,32 @@ export class ReviewService {
       },
     });
 
+    // Attach comments
     review['comments'] = this.buildCommentTree(flatComments);
   }
 
-  private buildCommentTree(comments: FlatComment[]): NestedComment[] {
-    const map = new Map<number, NestedComment>();
-    const roots: NestedComment[] = [];
+  private buildCommentTree(comments: CleanComment[]): NestedComment[] {
+    const commentMap = new Map<number, NestedComment>();
+    const rootComments: NestedComment[] = [];
 
     for (const comment of comments) {
-      map.set(comment.id, { ...comment, children: [] });
+      commentMap.set(comment.id, { ...comment, children: [] });
     }
 
+    // Link each comment to its parent or add to roots
     for (const comment of comments) {
-      const node = map.get(comment.id)!;
+      const currentComment = commentMap.get(comment.id)!;
 
       if (comment.parentId) {
-        const parent = map.get(comment.parentId);
-        if (parent) {
-          parent.children.push(node);
+        const parentComment = commentMap.get(comment.parentId);
+        if (parentComment) {
+          parentComment.children.push(currentComment);
         }
       } else {
-        roots.push(node);
+        rootComments.push(currentComment);
       }
     }
 
-    return roots;
-  }
-
-  update(data: UpdateReviewDto) {
-    return this.prisma.review.update({
-      where: { id: data.reviewId },
-      data: { content: data.content, stars: data.stars },
-    });
-  }
-
-  remove(id: number) {
-    return this.prisma.review.delete({
-      where: { id },
-    });
+    return rootComments;
   }
 }

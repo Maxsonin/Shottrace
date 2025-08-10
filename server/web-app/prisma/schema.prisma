@@ -52,8 +52,8 @@ model Comment {
   commenter   User @relation(fields: [commenterId], references: [id], onDelete: Cascade)
   commenterId Int
 
-  review   Review? @relation("ReviewComments", fields: [reviewId], references: [id], onDelete: Cascade)
-  reviewId Int?
+  review   Review @relation("ReviewComments", fields: [reviewId], references: [id], onDelete: Cascade)
+  reviewId Int
 
   parent   Comment? @relation("CommentToComment", fields: [parentId], references: [id], onDelete: Cascade)
   parentId Int?
