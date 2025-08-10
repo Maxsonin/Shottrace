@@ -4,52 +4,59 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Post,
   Put,
   Query,
 } from '@nestjs/common';
 import { ReviewService } from './review.service';
-import { CreateReviewDto, UpdateReviewDto } from './dtos/review.dto';
+import { CreateReviewDto } from './dto/create-review.dto';
 import { UserEntity } from 'src/auth/types/auth.type';
 import { User } from 'src/common/decorators/user.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
+import { UpdateReviewDto } from './dto/update-review.dto';
 
-@Controller('reviews')
+@Controller()
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 
-  @Post()
-  create(@User() user: UserEntity, @Body() dto: CreateReviewDto) {
-    return this.reviewService.create(user, dto);
+  @Post('reviews')
+  create(@User('userId') userId: number, @Body() dto: CreateReviewDto) {
+    return this.reviewService.create(userId, dto);
+  }
+
+  @Put('reviews/:id')
+  update(@Param('id', ParseIntPipe) id: number, @Body() data: UpdateReviewDto) {
+    return this.reviewService.update(id, data);
+  }
+
+  @Delete('reviews/:id')
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    await this.reviewService.remove(id);
+    return;
   }
 
   @Public()
-  @Get(':movieId/public')
+  @Get('movies/:movieId/reviews')
   findAll(
-    @Param('movieId') movieId: number,
-    @Query('limit') limit = '10',
-    @Query('cursor') cursor?: string,
+    @Param('movieId', ParseIntPipe) movieId: number,
+    @Query('limit', ParseIntPipe) limit = 10,
+    @Query('cursor', ParseIntPipe) cursor?: number,
   ) {
-    return this.reviewService.findAll(
-      +movieId,
-      +limit,
-      cursor ? +cursor : undefined,
-    );
+    return this.reviewService.findAll(movieId, limit, cursor);
   }
 
-  @Get(':movieId/user')
-  findUserReview(@Param('movieId') movieId: number, @User() user: UserEntity) {
-    return this.reviewService.findUserReview(+movieId, user);
+  @Get('movies/:movieId/reviews/my')
+  findMyReview(
+    @Param('movieId', ParseIntPipe) movieId: number,
+    @User('userId') userId: number,
+  ) {
+    return this.reviewService.findMyReview(movieId, userId);
   }
 
-  @Put()
-  update(@Body() data: UpdateReviewDto) {
-    console.log(data);
-    return this.reviewService.update(data);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.reviewService.remove(+id);
+  @Public()
+  @Get('reviews/:id')
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.reviewService.findOne(id);
   }
 }
