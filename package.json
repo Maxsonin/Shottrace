@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "prepare": "git config core.hooksPath .githooks && chmod +x .githooks/*",
+    "prepare": "git config core.hooksPath .githooks",
     "install:web-app": "cd server/web-app && npm install",
     "install:client": "cd client && npm install",
     "install:recommender": "cd server/recommender-api && ",
