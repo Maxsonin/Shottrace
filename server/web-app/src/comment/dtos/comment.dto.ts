@@ -11,7 +11,7 @@ export class CreateCommentDto {
   @IsOptional()
   @Type(() => Number)
   @IsInt()
-  reviewId?: number;
+  reviewId: number;
 
   @IsOptional()
   @Type(() => Number)
