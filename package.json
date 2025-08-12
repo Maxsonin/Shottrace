@@ -9,10 +9,12 @@
     "start:dev:web-app": "cd server/web-app && npm run start:dev",
     "start:dev:client": "cd client && npm run dev",
     "start:dev:recommender": "cd server/recommender-api && ",
-    "docker:web-app:start": "docker-compose -f server/web-app/docker-compose.yml up --build",
-    "start:dev:all": "concurrently \"npm run start:web-app\" \"npm run start:client\" \"npm run start:recommender\" \"docker:web-app:start\""
+    "docker:web-app:start": "docker-compose -f server/web-app/docker-compose.yml up --build -d",
+    "docker:web-app:stop": "docker-compose -f server/web-app/docker-compose.yml down",
+    "start:dev:all": "npm run docker:web-app:start && wait-port localhost:5433 && concurrently \"npm run start:dev:web-app\" \"npm run start:dev:client\" \"npm run start:dev:recommender\""
   },
   "devDependencies": {
-    "concurrently": "^8.2.0"
+    "concurrently": "^8.2.0",
+    "wait-port": "^1.1.0"
   }
 }
