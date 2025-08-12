@@ -1,0 +1,46 @@
+#!/bin/sh
+
+CHANGED_FILES=$(git diff --staged --name-only)
+
+run_client_tests=false
+run_web_app_tests=false
+run_recommender_tests=false
+
+echo "$CHANGED_FILES" | grep -q '^client/' && run_client_tests=true
+echo "$CHANGED_FILES" | grep -q '^server/web-app/' && run_web_app_tests=true
+echo "$CHANGED_FILES" | grep -q '^server/recommender-api/' && run_recommender_tests=true
+
+if [ "$run_client_tests" = true ]; then
+  echo "No React tests yet..."
+fi
+
+if [ "$run_web_app_tests" = true ]; then
+  echo "Running NestJS web-app pre-push checks..."
+  cd server/web-app || exit 1
+
+  echo "Installing dependencies..."
+  start_time=$(date +%s)
+
+  npm ci --silent
+  npx prisma generate --no-hints > /dev/null
+
+  end_time=$(date +%s)
+  duration=$((end_time - start_time))
+  echo "Dependencies installed in $duration seconds."
+
+  echo "Running NestJS web-app tests..."
+  npm test || exit 1
+
+  cd - >/dev/null
+fi
+
+
+if [ "$run_recommender_tests" = true ]; then
+  echo "No recommender-api Python tests yet..."
+fi
+
+if [ "$run_client_tests" = false ] && [ "$run_web_app_tests" = false ] && [ "$run_recommender_tests" = false ]; then
+  echo "No relevant changes — skipping tests."
+fi
+
+echo "✅ Pre-push checks passed."
