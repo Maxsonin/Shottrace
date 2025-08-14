@@ -51,7 +51,7 @@ function MoviePage() {
     if (!id) return;
     const cursorParam = cursor ? `&cursor=${cursor}` : '';
     const response = await api.get(
-      `/reviews/${id}/public?limit=10${cursorParam}`
+      `/movies/${id}/reviews?limit=10${cursorParam}`
     );
     const data = response.data;
 
@@ -67,7 +67,7 @@ function MoviePage() {
   const fetchUserReview = async () => {
     if (!id) return;
     try {
-      const response = await api.get(`/reviews/${id}/user`);
+      const response = await api.get(`/movies/${id}/reviews/my`);
       setUserReview(response.data);
     } catch {
       setUserReview(null);
@@ -83,7 +83,7 @@ function MoviePage() {
     try {
       if (data.reviewId) {
         // Update review
-        const response = await api.put(`/reviews`, data);
+        const response = await api.put(`/reviews/${data.reviewId}`, data);
         setUserReview(response.data);
         setEditReview(false);
       } else if (data.movieId) {

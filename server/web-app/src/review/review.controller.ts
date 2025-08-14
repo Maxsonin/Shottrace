@@ -41,7 +41,7 @@ export class ReviewController {
   findAll(
     @Param('movieId', ParseIntPipe) movieId: number,
     @Query('limit', ParseIntPipe) limit = 10,
-    @Query('cursor', ParseIntPipe) cursor?: number,
+    @Query('cursor') cursor?: number,
   ) {
     return this.reviewService.findAll(movieId, limit, cursor);
   }
