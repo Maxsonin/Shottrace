@@ -1,0 +1,49 @@
+import type { Comment } from '../../types/movie.type';
+import { makeRequest } from '../axios';
+
+export const fetchComments = async (
+  reviewId: number,
+  offset = 0,
+  limit = 5
+) => {
+  return makeRequest<{ items: Comment[]; hasMore: boolean }>(
+    `/reviews/${reviewId}/comments?offset=${offset}&limit=${limit}`
+  );
+};
+
+export const fetchReplies = async (
+  commentId: number,
+  offset = 0,
+  limit = 3
+) => {
+  return makeRequest<{ replies: Comment[]; hasMore: boolean }>(
+    `/comments/${commentId}/replies?offset=${offset}&limit=${limit}`
+  );
+};
+
+export const createComment = async (data: {
+  reviewId: number;
+  content: string;
+  parentId?: number | null;
+}) => {
+  return makeRequest<Comment>('/comments', {
+    method: 'POST',
+    data,
+  });
+};
+
+export const updateComment = async (
+  commentId: number,
+  data: { content: string }
+) => {
+  return makeRequest<Comment>(`/comments/${commentId}`, {
+    method: 'PUT',
+    data,
+  });
+};
+
+export const deleteComment = async (commentId: number) => {
+  return makeRequest(`/comments/${commentId}`, {
+    method: 'DELETE',
+  });
+};

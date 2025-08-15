@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../providers/AuthProvider';
-import { signIn } from '../api/authService';
+import { signIn } from '../api/services/authService';
 
 function SignInForm({ onClose }: { onClose: () => void }) {
   const [username, setUsername] = useState('');

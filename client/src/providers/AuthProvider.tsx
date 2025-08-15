@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import api from '../api/axios';
+import { api } from '../api/axios';
 
 type AuthContext = {
   token: string | null;

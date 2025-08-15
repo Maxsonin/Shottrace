@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../providers/AuthProvider';
-import { signUp } from '../api/authService';
+import { signUp } from '../api/services/authService';
 
 function SignUpForm({ onClose }: { onClose: () => void }) {
   const [email, setEmail] = useState('');

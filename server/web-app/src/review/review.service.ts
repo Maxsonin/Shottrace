@@ -1,27 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateReviewDto } from './dto/create-review.dto';
-import { UserEntity } from '../auth/types/auth.type';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { Review } from '@prisma/client';
-
-interface CleanComment {
-  id: number;
-  content: string;
-  rating: number;
-  parentId: number | null;
-  commenter: {
-    username: string;
-  };
-}
-
-interface NestedComment extends CleanComment {
-  children: NestedComment[];
-}
+import { CommentService } from 'src/comment/comment.service';
 
 @Injectable()
 export class ReviewService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly commentService: CommentService,
+  ) {}
 
   create(userId: number, dto: CreateReviewDto) {
     return this.prisma.review.create({
@@ -47,6 +36,10 @@ export class ReviewService {
     });
   }
 
+  findOne(id: number) {
+    return this.prisma.review.findUnique({ where: { id } });
+  }
+
   async findAll(movieId: number, limit = 10, cursor?: number) {
     const reviews = await this.prisma.review.findMany({
       where: { movieId },
@@ -69,7 +62,7 @@ export class ReviewService {
       reviews.length === limit ? reviews[reviews.length - 1].id : null;
 
     return {
-      data: reviews,
+      reviews,
       nextCursor,
     };
   }
@@ -94,58 +87,9 @@ export class ReviewService {
     return userReview;
   }
 
-  findOne(id: number) {
-    return this.prisma.review.findUnique({ where: { id } });
-  }
-
-  // --- Comments logic ---
   private async attachCommentsToReview(review: Review) {
-    const flatComments: CleanComment[] = await this.prisma.comment.findMany({
-      where: {
-        reviewId: review.id,
-      },
-      orderBy: {
-        rating: 'desc',
-      },
-      select: {
-        id: true,
-        content: true,
-        rating: true,
-        parentId: true,
-        commenter: {
-          select: {
-            username: true,
-          },
-        },
-      },
-    });
-
-    // Attach comments
-    review['comments'] = this.buildCommentTree(flatComments);
-  }
-
-  private buildCommentTree(comments: CleanComment[]): NestedComment[] {
-    const commentMap = new Map<number, NestedComment>();
-    const rootComments: NestedComment[] = [];
-
-    for (const comment of comments) {
-      commentMap.set(comment.id, { ...comment, children: [] });
-    }
-
-    // Link each comment to its parent or add to roots
-    for (const comment of comments) {
-      const currentComment = commentMap.get(comment.id)!;
-
-      if (comment.parentId) {
-        const parentComment = commentMap.get(comment.parentId);
-        if (parentComment) {
-          parentComment.children.push(currentComment);
-        }
-      } else {
-        rootComments.push(currentComment);
-      }
-    }
-
-    return rootComments;
+    review['comments'] = await this.commentService.getCommentsTreeByReview(
+      review.id,
+    );
   }
 }

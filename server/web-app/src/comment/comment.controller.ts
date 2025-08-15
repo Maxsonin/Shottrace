@@ -1,22 +1,36 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { CommentService } from './comment.service';
-import { UserEntity } from 'src/auth/types/auth.type';
 import { User } from 'src/common/decorators/user.decorator';
-import { CreateCommentDto } from './dtos/comment.dto';
+import { CreateCommentDto } from './dto/create-comment.dto';
+import { UpdateCommentDto } from './dto/update-comment.dto';
 import { Public } from 'src/common/decorators/public.decorator';
 
-@Controller('comments')
+@Controller()
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
-  @Post()
-  create(@User() user: UserEntity, @Body() dto: CreateCommentDto) {
-    return this.commentService.create(user, dto);
+  @Post('comments')
+  create(@User('userId') userId: number, @Body() dto: CreateCommentDto) {
+    return this.commentService.create(userId, dto);
   }
 
-  @Public()
-  @Get()
-  findByReview(reviewId: number) {
-    return this.commentService.findByReview(reviewId);
+  @Put('comments/:id')
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateCommentDto) {
+    return this.commentService.update(id, dto);
+  }
+
+  @Delete('comments/:id')
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.commentService.remove(id);
   }
 }

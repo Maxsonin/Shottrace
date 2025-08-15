@@ -1,35 +1,22 @@
-import { use, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import type { Movie, MoviesStats } from '../../types/movie.type';
+import type {
+  Comment,
+  Movie,
+  MoviesStats,
+  Review,
+} from '../../types/movie.type';
 import { useAuth } from '../../providers/AuthProvider';
-import api from '../../api/axios';
 import ReviewForm from '../../components/ReviewForm';
+import {
+  createReview,
+  deleteReview,
+  fetchMovieReviews,
+  fetchMyReview,
+  updateReview,
+} from '../../api/services/movieService';
 
 type MovieWithStats = Movie & MoviesStats;
-
-const TMDB_TOKEN = import.meta.env.VITE_TMDB_TOKEN;
-
-type Comment = {
-  id: number;
-  content: string;
-  rating: number;
-  parentId: number | null;
-  commenter: {
-    username: string;
-  };
-  children: Comment[];
-};
-
-type Review = {
-  id: number;
-  content: string;
-  stars: number;
-  rating: number;
-  reviewer: {
-    username: string;
-  };
-  comments: Comment[];
-};
 
 function MoviePage() {
   const { id } = useParams<{ id: string }>();
@@ -38,37 +25,30 @@ function MoviePage() {
   const [error, setError] = useState<string | null>(null);
 
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [nextCursor, setNextCursor] = useState<number | null>(null);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [userReview, setUserReview] = useState<Review | null>(null);
 
   const [writeReview, setWriteReview] = useState(false);
   const [editReview, setEditReview] = useState(false);
 
   const { user } = useAuth();
+  const TMDB_TOKEN = import.meta.env.VITE_TMDB_TOKEN;
 
-  const fetchReviews = async (cursor: number | null = null) => {
+  const fetchReviews = async () => {
     if (!id) return;
-    const cursorParam = cursor ? `&cursor=${cursor}` : '';
-    const response = await api.get(
-      `/movies/${id}/reviews?limit=10${cursorParam}`
-    );
-    const data = response.data;
-
-    if (cursor) {
-      setReviews((prev) => [...prev, ...(data.data || [])]);
-    } else {
-      setReviews(data.data || []);
+    try {
+      const data = await fetchMovieReviews(id);
+      console.log(data);
+      setReviews(data.reviews);
+    } catch {
+      setError('Failed to fetch reviews');
     }
-
-    setNextCursor(data.nextCursor || null);
   };
 
   const fetchUserReview = async () => {
     if (!id) return;
     try {
-      const response = await api.get(`/movies/${id}/reviews/my`);
-      setUserReview(response.data);
+      const review = await fetchMyReview(id);
+      setUserReview(review);
     } catch {
       setUserReview(null);
     }
@@ -81,63 +61,63 @@ function MoviePage() {
     stars: number;
   }) => {
     try {
+      let response: Review;
       if (data.reviewId) {
-        // Update review
-        const response = await api.put(`/reviews/${data.reviewId}`, data);
-        setUserReview(response.data);
+        response = await updateReview(data.reviewId, data);
         setEditReview(false);
-      } else if (data.movieId) {
-        // Add new review
-        const response = await api.post(`/reviews`, data);
-        setUserReview(response.data);
-        setWriteReview(false);
       } else {
-        throw new Error('Missing reviewId or movieId');
+        response = await createReview(data);
+        setWriteReview(false);
       }
+      setUserReview(response);
     } catch {
       setUserReview(null);
     }
   };
 
-  const deleteUserReview = async (id: number) => {
+  const deleteUserReview = async (reviewId: number) => {
     try {
-      await api.delete(`/reviews/${id}`);
+      await deleteReview(reviewId);
       setUserReview(null);
     } catch {
       setUserReview(null);
     }
   };
 
-  const renderComments = (comments: Comment[], level = 0) => {
-    return comments ? (
-      <>
-        {comments.map((comment) => (
-          <div
-            key={comment.id}
-            style={{
-              marginLeft: `${level * 20}px`,
-              borderLeft: '2px solid #ddd',
-              paddingLeft: '10px',
-              marginTop: '0.5rem',
-            }}
-          >
-            <p>
-              <strong>{comment.commenter.username}</strong>
-            </p>
-            <p>{comment.content}</p>
+  const dataFormatter = new Intl.DateTimeFormat(undefined, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  });
 
-            {comment.children && comment.children.length > 0 && (
-              <div>{renderComments(comment.children, level + 1)}</div>
-            )}
-          </div>
-        ))}
-      </>
-    ) : null;
-  };
+  const renderComments = (comments: Comment[], level = 0) => (
+    <>
+      {comments.map((comment) => (
+        <div
+          key={comment.id}
+          style={{
+            marginLeft: `${level * 20}px`,
+            borderLeft: '2px solid #ddd',
+            paddingLeft: '10px',
+            marginTop: '0.5rem',
+          }}
+        >
+          <p>
+            <strong>{comment.commenter.username}</strong> Rating:{' '}
+            {comment.rating}{' '}
+            {dataFormatter.format(Date.parse(comment.createdAt))}
+          </p>
+          <p>{comment.content}</p>
 
+          {comment.children.length > 0 &&
+            renderComments(comment.children, level + 1)}
+        </div>
+      ))}
+    </>
+  );
+
+  // Fetch movie data
   useEffect(() => {
     if (!id) return;
-
     setLoading(true);
     setError(null);
 
@@ -169,13 +149,13 @@ function MoviePage() {
       });
   }, [id]);
 
+  // Fetch reviews
   useEffect(() => {
     if (!id) return;
-    setReviews([]);
-    setNextCursor(null);
     fetchReviews();
   }, [id]);
 
+  // Fetch user review if logged in
   useEffect(() => {
     if (!id || !user) return;
     fetchUserReview();
@@ -197,8 +177,9 @@ function MoviePage() {
       <div>Watched: {movie.watchedCount}</div>
 
       <h2>Reviews</h2>
-      {user ? (
-        userReview ? (
+
+      {user &&
+        (userReview ? (
           editReview ? (
             <ReviewForm
               onSubmit={addOrUpdateUserReview}
@@ -220,8 +201,8 @@ function MoviePage() {
               }}
             >
               <p>
-                <strong>{userReview.reviewer?.username}</strong> rated{' '}
-                {userReview.stars}⭐
+                <strong>{userReview.reviewer.username}</strong> rated{' '}
+                {userReview.stars}⭐ Rating: {userReview.rating}
                 <button
                   className="bg-amber-500 cursor-pointer mr-1"
                   onClick={() => setEditReview(true)}
@@ -245,9 +226,7 @@ function MoviePage() {
           <ReviewForm
             onSubmit={addOrUpdateUserReview}
             onClose={() => setWriteReview(false)}
-            data={{
-              movieId: id,
-            }}
+            data={{ movieId: id }}
           />
         ) : (
           <button
@@ -256,10 +235,7 @@ function MoviePage() {
           >
             Write a review
           </button>
-        )
-      ) : (
-        <h1>Log in to write a review</h1>
-      )}
+        ))}
 
       {reviews
         .filter((review) => review.id !== userReview?.id)
@@ -267,6 +243,7 @@ function MoviePage() {
           <div key={review.id} style={{ marginTop: '1rem' }}>
             <p>
               <strong>{review.reviewer.username}</strong> rated {review.stars}⭐
+              Rating: {review.rating}
             </p>
             <p>{review.content}</p>
             <div style={{ marginTop: '1rem' }}>
@@ -274,18 +251,6 @@ function MoviePage() {
             </div>
           </div>
         ))}
-
-      {nextCursor && (
-        <button
-          onClick={() => {
-            setLoadingMore(true);
-            fetchReviews(nextCursor).finally(() => setLoadingMore(false));
-          }}
-          disabled={loadingMore}
-        >
-          {loadingMore ? 'Loading...' : 'Load more reviews'}
-        </button>
-      )}
     </div>
   );
 }
