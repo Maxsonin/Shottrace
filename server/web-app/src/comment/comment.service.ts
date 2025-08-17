@@ -54,9 +54,10 @@ export class CommentService {
         createdAt: true,
         content: true,
         rating: true,
+        reviewId: true,
         parentId: true,
         commenter: {
-          select: { username: true },
+          select: { id: true, username: true },
         },
       },
     });
