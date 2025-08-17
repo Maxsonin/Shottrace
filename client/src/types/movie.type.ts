@@ -16,8 +16,10 @@ export type Comment = {
   updatedAt: string;
   content: string;
   rating: number;
+  reviewId: number;
   parentId: number | null;
   commenter: {
+    id: number;
     username: string;
   };
   children: Comment[];
@@ -31,6 +33,7 @@ export type Review = {
   stars: number;
   rating: number;
   reviewer: {
+    id: number;
     username: string;
   };
   comments: Comment[];

@@ -1,33 +1,16 @@
-import type { Review } from '../../types/movie.type';
-import { makeRequest } from '../axios';
+const TMDB_TOKEN = import.meta.env.VITE_TMDB_TOKEN;
 
-export const fetchMovieReviews = async (movieId: string, cursor?: number) => {
-  const cursorParam = cursor ? `&cursor=${cursor}` : '';
-  return makeRequest<{ reviews: Review[]; nextCursor: number | null }>(
-    `/movies/${movieId}/reviews?limit=10${cursorParam}`
-  );
-};
-
-export const fetchMyReview = async (movieId: string) => {
-  return makeRequest<Review>(`/movies/${movieId}/reviews/my`);
-};
-
-export const createReview = async (data: any) => {
-  return makeRequest<Review>('/reviews', {
-    method: 'POST',
-    data,
+export const getMovie = async (movieId: string) => {
+  const res = await fetch(`https://api.themoviedb.org/3/movie/${movieId}`, {
+    headers: {
+      Authorization: `Bearer ${TMDB_TOKEN}`,
+      Accept: 'application/json',
+    },
   });
-};
 
-export const updateReview = async (reviewId: string | number, data: any) => {
-  return makeRequest<Review>(`/reviews/${reviewId}`, {
-    method: 'PUT',
-    data,
-  });
-};
+  if (!res.ok) {
+    throw new Error(`Failed to fetch movie: ${res.statusText}`);
+  }
 
-export const deleteReview = async (reviewId: number) => {
-  return makeRequest(`/reviews/${reviewId}`, {
-    method: 'DELETE',
-  });
+  return res.json();
 };

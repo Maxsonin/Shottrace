@@ -8,9 +8,13 @@ export const api = axios.create({
 export function makeRequest<T = any>(
   url: string,
   options?: AxiosRequestConfig
-) {
+): Promise<T> {
   return api(url, options)
-    .then((response) => response.data as T)
+    .then((response) => {
+      const data = response.data as T;
+      console.log(`${url} response:`, data);
+      return data;
+    })
     .catch((error) =>
       Promise.reject(error?.response?.data?.message ?? 'Something went wrong')
     );

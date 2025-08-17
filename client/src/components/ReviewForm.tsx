@@ -19,7 +19,7 @@ interface ReviewFormProps {
   data?: ReviewFormData;
 }
 
-const ReviewForm: React.FC<ReviewFormProps> = ({ onSubmit, onClose, data }) => {
+const ReviewForm = ({ onSubmit, onClose, data }: ReviewFormProps) => {
   const {
     initialContent = '',
     initialStars = 0,
@@ -65,13 +65,17 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ onSubmit, onClose, data }) => {
           className="relative w-10 h-10 cursor-pointer"
           onMouseLeave={() => setHoverStars(null)}
         >
-          {/* Transparent button for first half */}
-          <button
-            type="button"
-            className="absolute inset-y-0 left-0 w-1/2 h-full"
-            onMouseEnter={() => setHoverStars(i - starStep)}
-            onClick={() => setStars(i - starStep)}
-          />
+          {/* For first star, remove first half button to remove 0.5 stars reviews */}
+          {i !== 1 && (
+            <button
+              type="button"
+              className={`absolute inset-y-0 left-0 ${
+                i !== 1 ? 'w-1/2' : 'w-full'
+              } h-full`}
+              onMouseEnter={() => setHoverStars(i - starStep)}
+              onClick={() => setStars(i - starStep)}
+            />
+          )}
           {/* Transparent button for second half */}
           <button
             type="button"

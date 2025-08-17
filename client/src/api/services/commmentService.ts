@@ -21,11 +21,7 @@ export const fetchReplies = async (
   );
 };
 
-export const createComment = async (data: {
-  reviewId: number;
-  content: string;
-  parentId?: number | null;
-}) => {
+export const createComment = async (data: any) => {
   return makeRequest<Comment>('/comments', {
     method: 'POST',
     data,
