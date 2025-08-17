@@ -36,16 +36,12 @@ export class ReviewService {
     });
   }
 
-  findOne(id: number) {
-    return this.prisma.review.findUnique({ where: { id } });
-  }
-
-  async findAll(movieId: number, limit = 10, cursor?: number) {
+  async findAll(userId: number, movieId: number, limit = 10, cursor?: number) {
     const reviews = await this.prisma.review.findMany({
       where: { movieId },
       take: limit,
       ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
-      orderBy: [{ rating: 'desc' }, { createdAt: 'desc' }, { id: 'desc' }],
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       include: {
         reviewer: {
           select: { username: true },
@@ -54,7 +50,7 @@ export class ReviewService {
     });
 
     for (const review of reviews) {
-      await this.attachCommentsToReview(review);
+      await this.attachCommentsAndVotesToReview(review, userId);
     }
 
     // Check if there are more reviews
@@ -81,15 +77,41 @@ export class ReviewService {
     });
 
     if (userReview) {
-      await this.attachCommentsToReview(userReview);
+      await this.attachCommentsAndVotesToReview(userReview, userId);
     }
 
     return userReview;
   }
 
-  private async attachCommentsToReview(review: Review) {
+  private async attachCommentsAndVotesToReview(review: Review, userId: number) {
     review['comments'] = await this.commentService.getCommentsTreeByReview(
       review.id,
+      userId,
     );
+
+    const votes = await this.prisma.vote.findMany({
+      where: { reviewId: review.id },
+    });
+    const total = votes.reduce((sum, vote) => sum + vote.value, 0);
+    const userVote = userId
+      ? (votes.find((vote) => vote.userId === userId)?.value ?? 0)
+      : 0;
+
+    review['votes'] = total;
+    review['userVote'] = userVote;
+  }
+
+  async voteReview(userId: number, reviewId: number, value: 1 | -1 | 0) {
+    if (value === 0) {
+      return this.prisma.vote.deleteMany({
+        where: { userId, reviewId },
+      });
+    }
+
+    return this.prisma.vote.upsert({
+      where: { userId_reviewId: { userId, reviewId } },
+      update: { value },
+      create: { userId, reviewId, value },
+    });
   }
 }

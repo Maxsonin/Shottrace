@@ -39,11 +39,12 @@ export class ReviewController {
   @Public()
   @Get('movies/:movieId/reviews')
   findAll(
+    @User('userId') userId: number,
     @Param('movieId', ParseIntPipe) movieId: number,
     @Query('limit', ParseIntPipe) limit = 10,
     @Query('cursor') cursor?: number,
   ) {
-    return this.reviewService.findAll(movieId, limit, cursor);
+    return this.reviewService.findAll(userId, movieId, limit, cursor);
   }
 
   @Get('movies/:movieId/reviews/my')
@@ -54,9 +55,12 @@ export class ReviewController {
     return this.reviewService.findMyReview(movieId, userId);
   }
 
-  @Public()
-  @Get('reviews/:id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.reviewService.findOne(id);
+  @Post('reviews/:id/vote')
+  voteReview(
+    @Param('id', ParseIntPipe) reviewId: number,
+    @Body('userId', ParseIntPipe) userId: number,
+    @Body('value', ParseIntPipe) value: 1 | -1 | 0,
+  ) {
+    return this.reviewService.voteReview(userId, reviewId, value);
   }
 }

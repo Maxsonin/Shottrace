@@ -33,4 +33,13 @@ export class CommentController {
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.commentService.remove(id);
   }
+
+  @Post('comments/:id/vote')
+  voteComment(
+    @Param('id', ParseIntPipe) commentId: number,
+    @Body('userId', ParseIntPipe) userId: number,
+    @Body('value', ParseIntPipe) value: 1 | -1 | 0,
+  ) {
+    return this.commentService.voteComment(userId, commentId, value);
+  }
 }
