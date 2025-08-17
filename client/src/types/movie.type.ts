@@ -15,7 +15,8 @@ export type Comment = {
   createdAt: string;
   updatedAt: string;
   content: string;
-  rating: number;
+  votes: number;
+  userVote: number;
   reviewId: number;
   parentId: number | null;
   commenter: {
@@ -30,8 +31,9 @@ export type Review = {
   createdAt: string;
   updatedAt: string;
   content: string;
+  votes: number;
+  userVote: number;
   stars: number;
-  rating: number;
   reviewer: {
     id: number;
     username: string;

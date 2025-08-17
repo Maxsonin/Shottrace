@@ -4,6 +4,11 @@ import ReviewElement from './ReviewElement';
 type Props = {
   reviews: ReviewType[];
   currentUserId?: string | number;
+  onVoteReview: (data: {
+    reviewId: number;
+    userId: number;
+    value: 1 | -1 | 0;
+  }) => void;
   onChange?: (review: ReviewType) => void;
   onDelete?: (id: number) => void;
 };
@@ -11,6 +16,7 @@ type Props = {
 export default function ReviewList({
   reviews,
   currentUserId,
+  onVoteReview,
   onChange,
   onDelete,
 }: Props) {
@@ -21,6 +27,7 @@ export default function ReviewList({
           key={review.id}
           review={review}
           isUser={currentUserId === review.reviewer.id}
+          onVoteReview={onVoteReview}
           onChange={onChange}
           onDelete={onDelete}
         />

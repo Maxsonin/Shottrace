@@ -43,3 +43,10 @@ export const deleteComment = async (commentId: number) => {
     method: 'DELETE',
   });
 };
+
+export const voteComment = async (commentId: number, data: any) => {
+  return makeRequest(`/comments/${commentId}/vote`, {
+    method: 'POST',
+    data,
+  });
+};

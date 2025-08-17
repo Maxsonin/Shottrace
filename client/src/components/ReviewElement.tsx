@@ -6,21 +6,26 @@ import {
   createComment,
   deleteComment,
   updateComment,
+  voteComment,
 } from '../api/services/commmentService';
 import { useAuth } from '../providers/AuthProvider';
 
 type Props = {
   review: Review;
   isUser?: boolean;
+  onVoteReview: (data: {
+    reviewId: number;
+    userId: number;
+    value: 1 | -1 | 0;
+  }) => void;
   onChange?: (review: Review) => void;
   onDelete?: (id: number) => void;
 };
 
-const onLike = async (reviewId: number) => {};
-
 export default function ReviewElement({
   review,
   isUser,
+  onVoteReview,
   onChange,
   onDelete,
 }: Props) {
@@ -100,7 +105,6 @@ export default function ReviewElement({
         id: user.userId,
         username: 'You',
       },
-      children: response.children || [],
     };
 
     setComments((prev) => {
@@ -119,6 +123,34 @@ export default function ReviewElement({
     setComments((prev) => deleteCommentFromTree(prev, commentId));
   };
 
+  const onVoteComment = async (data: {
+    commentId: number;
+    userId: number;
+    value: 1 | -1 | 0;
+  }) => {
+    await voteComment(data.commentId, data);
+
+    function updateVotes(comments: Comment[]): Comment[] {
+      return comments.map((comment) => {
+        if (comment.id === data.commentId) {
+          return {
+            ...comment,
+            votes: comment.votes - comment.userVote + data.value,
+            userVote: data.value,
+          };
+        } else if (comment.children && comment.children.length > 0) {
+          return {
+            ...comment,
+            children: updateVotes(comment.children),
+          };
+        }
+        return comment;
+      });
+    }
+
+    setComments((prev) => updateVotes(prev));
+  };
+
   return (
     <div
       className={`mt-4 p-4 rounded-xl border bg-gray-800 ${
@@ -128,7 +160,7 @@ export default function ReviewElement({
       <p className="font-semibold">
         {isUser ? 'You' : review.reviewer.username} rated{' '}
         <span className="text-yellow-500">{review.stars}⭐</span> Rating:{' '}
-        {review.rating}
+        {review.votes}
       </p>
 
       <p className="mt-2">{review.content}</p>
@@ -138,29 +170,57 @@ export default function ReviewElement({
           <>
             <button
               onClick={() => onChange?.(review)}
-              className="bg-amber-500 text-white px-3 py-1 rounded-lg hover:bg-amber-600"
+              className="cursor-pointer bg-amber-500 text-white px-3 py-1 rounded-lg hover:bg-amber-600"
             >
               Edit
             </button>
 
             <button
               onClick={() => onDelete?.(review.id)}
-              className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600"
+              className="cursor-pointer bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600"
             >
               Delete
             </button>
           </>
         )}
         <button
-          onClick={() => onLike(review.id)}
-          className="bg-green-500 text-white px-3 py-1 rounded-lg hover:bg-green-600"
+          onClick={() =>
+            onVoteReview({
+              reviewId: review.id,
+              userId: user.userId,
+              value: review.userVote === 1 ? 0 : 1,
+            })
+          }
+          className={`cursor-pointer  text-black px-3 py-1 rounded-lg ${
+            review.userVote === 1
+              ? 'bg-green-600'
+              : 'bg-white not-first:hover:bg-green-600'
+          }`}
         >
           Like
         </button>
 
         <button
+          onClick={() =>
+            onVoteReview({
+              reviewId: review.id,
+              userId: user.userId,
+              value: review.userVote === -1 ? 0 : -1,
+            })
+          }
+          className={`cursor-pointer text-black px-3 py-1 rounded-lg
+            ${
+              review.userVote === -1
+                ? 'bg-red-600'
+                : 'bg-white hover:bg-red-600'
+            }`}
+        >
+          Dislike
+        </button>
+
+        <button
           onClick={() => setReplying(true)}
-          className="bg-pink-500 text-white px-3 py-1 rounded-lg hover:bg-pink-600"
+          className="cursor-pointer bg-pink-500 text-white px-3 py-1 rounded-lg hover:bg-pink-600"
         >
           Reply
         </button>
@@ -196,7 +256,7 @@ export default function ReviewElement({
               <CommentThread
                 comments={comments}
                 addOrUpdateUserComment={addOrUpdateUserComment}
-                onLike={onLike}
+                onVoteComment={onVoteComment}
                 onDelete={deleteUserComment}
               />
             </div>

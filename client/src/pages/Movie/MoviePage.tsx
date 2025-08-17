@@ -1,4 +1,4 @@
-import { data, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../providers/AuthProvider';
 import { getMovie } from '../../api/services/movieService';
@@ -8,6 +8,7 @@ import {
   createReview,
   updateReview,
   deleteReview,
+  voteReview,
 } from '../../api/services/reviewService';
 
 import MovieDetails from '../../components/MovieDetails';
@@ -16,7 +17,6 @@ import ReviewForm from '../../components/ReviewForm';
 import ReviewElement from '../../components/ReviewElement';
 
 import type { Movie, MoviesStats, Review } from '../../types/movie.type';
-import { createComment } from '../../api/services/commmentService';
 
 type MovieWithStats = Movie & MoviesStats;
 
@@ -35,6 +35,43 @@ export default function MoviePage() {
   const [userReview, setUserReview] = useState<Review | null>(null);
   const [writeReview, setWriteReview] = useState(false);
   const [editReview, setEditReview] = useState(false);
+
+  const onVoteReview = async (data: {
+    reviewId: number;
+    userId: number;
+    value: 1 | -1 | 0;
+  }) => {
+    if (data.reviewId) {
+      await voteReview(data.reviewId, {
+        userId: data.userId,
+        value: data.value,
+      });
+
+      if (userReview?.id === data.reviewId) {
+        setUserReview((prev) =>
+          prev
+            ? {
+                ...prev,
+                votes: (prev.votes ?? 0) - (prev.userVote ?? 0) + data.value,
+                userVote: data.value,
+              }
+            : prev
+        );
+      } else {
+        setReviews((prev) =>
+          prev.map((r) =>
+            r.id === data.reviewId
+              ? {
+                  ...r,
+                  votes: (r.votes ?? 0) - (r.userVote ?? 0) + data.value,
+                  userVote: data.value,
+                }
+              : r
+          )
+        );
+      }
+    }
+  };
 
   // Fetch movie
   useEffect(() => {
@@ -145,6 +182,7 @@ export default function MoviePage() {
               review={userReview}
               isUser
               onChange={() => setEditReview(true)}
+              onVoteReview={onVoteReview}
               onDelete={(id) => deleteUserReviewHandler(id)}
             />
           ) : (
@@ -158,7 +196,9 @@ export default function MoviePage() {
         </>
       )}
 
-      {!reviewsLoading && <ReviewList reviews={reviews} />}
+      {!reviewsLoading && (
+        <ReviewList onVoteReview={onVoteReview} reviews={reviews} />
+      )}
 
       {reviewsError && <div>{String(reviewsError)}</div>}
     </div>

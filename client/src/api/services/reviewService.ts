@@ -31,3 +31,10 @@ export const deleteReview = async (reviewId: number) => {
     method: 'DELETE',
   });
 };
+
+export const voteReview = async (reviewId: number, data: any) => {
+  return makeRequest(`/reviews/${reviewId}/vote`, {
+    method: 'POST',
+    data,
+  });
+};
