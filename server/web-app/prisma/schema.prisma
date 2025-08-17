@@ -30,7 +30,6 @@ model Review {
   updatedAt DateTime @updatedAt
   content   String
   stars     Float
-  rating    Int      @default(0)
   movieId   Int // TMDB ID
 
   reviewer   User @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
@@ -47,7 +46,6 @@ model Comment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   content   String
-  rating    Int      @default(0)
 
   commenter   User @relation(fields: [commenterId], references: [id], onDelete: Cascade)
   commenterId Int
@@ -67,7 +65,7 @@ model Comment {
 
 model Vote {
   id     Int  @id @default(autoincrement())
-  value  Int // 1 or -1 for up/down
+  value  Int // 1 or -1 for up/down and 0 for not rated
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId Int
 
@@ -77,5 +75,6 @@ model Vote {
   comment   Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
   commentId Int?
 
-  @@unique([userId, reviewId, commentId])
+  @@unique([userId, reviewId])
+  @@unique([userId, commentId])
 }
