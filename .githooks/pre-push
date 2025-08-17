@@ -1,6 +1,15 @@
 #!/bin/sh
 
-CHANGED_FILES=$(git diff --staged --name-only)
+REMOTE_SHA=$(git ls-remote origin main | cut -f1)
+LOCAL_SHA=$(git rev-parse main)
+
+# Check if remote branch exists
+if [ -z "$REMOTE_SHA" ]; then
+  echo "Error: Remote branch 'main' not found. Cannot push."
+  exit 1
+fi
+
+CHANGED_FILES=$(git diff --name-only "$REMOTE_SHA" "$LOCAL_SHA")
 
 run_client_tests=false
 run_web_app_tests=false
@@ -33,7 +42,6 @@ if [ "$run_web_app_tests" = true ]; then
 
   cd - >/dev/null
 fi
-
 
 if [ "$run_recommender_tests" = true ]; then
   echo "No recommender-api Python tests yet..."
