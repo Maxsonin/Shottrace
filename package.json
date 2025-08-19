@@ -11,7 +11,8 @@
     "start:dev:recommender": "cd server/recommender-api && ",
     "docker:web-app:start": "docker-compose -f server/web-app/docker-compose.yml up --build -d",
     "docker:web-app:stop": "docker-compose -f server/web-app/docker-compose.yml down",
-    "start:dev:all": "npm run docker:web-app:start && wait-port localhost:5433 && concurrently \"npm run start:dev:web-app\" \"npm run start:dev:client\" \"npm run start:dev:recommender\""
+    "start:dev:all": "npm run docker:web-app:start && wait-port localhost:5433 && concurrently \"npm run start:dev:web-app\" \"npm run start:dev:client\" \"npm run start:dev:recommender\"",
+    "prisma:studio": "cd server/web-app && npx prisma studio"
   },
   "devDependencies": {
     "concurrently": "^8.2.0",
