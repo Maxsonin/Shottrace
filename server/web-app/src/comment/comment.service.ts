@@ -16,8 +16,6 @@ export type CleanComment = {
   };
 };
 
-export type NestedComment = CleanComment & { children: NestedComment[] };
-
 @Injectable()
 export class CommentService {
   constructor(private readonly prisma: PrismaService) {}
@@ -37,10 +35,7 @@ export class CommentService {
 
     const withVotes = await this.attachVotesToComment(comment, userId);
 
-    return {
-      ...withVotes,
-      children: [],
-    };
+    return withVotes;
   }
 
   update(id: number, dto: UpdateCommentDto) {
@@ -54,10 +49,10 @@ export class CommentService {
     return this.prisma.comment.delete({ where: { id } });
   }
 
-  async getCommentsTreeByReview(
+  async getCommentsByReview(
     reviewId: number,
     userId?: number, // optional to get current user's vote
-  ): Promise<NestedComment[]> {
+  ): Promise<CleanComment[]> {
     const flatComments: CleanComment[] = await this.prisma.comment.findMany({
       where: { reviewId },
       orderBy: { createdAt: 'asc' },
@@ -98,30 +93,7 @@ export class CommentService {
 
     flatCommentsWithVotes.sort((a, b) => b.votes - a.votes);
 
-    return this.buildCommentTree(flatCommentsWithVotes);
-  }
-
-  private buildCommentTree(comments: CleanComment[]): NestedComment[] {
-    const commentMap = new Map<number, NestedComment>();
-    const rootComments: NestedComment[] = [];
-
-    for (const comment of comments) {
-      commentMap.set(comment.id, { ...comment, children: [] });
-    }
-
-    for (const comment of comments) {
-      const currentComment = commentMap.get(comment.id)!;
-      if (comment.parentId) {
-        const parentComment = commentMap.get(comment.parentId);
-        if (parentComment) {
-          parentComment.children.push(currentComment);
-        }
-      } else {
-        rootComments.push(currentComment);
-      }
-    }
-
-    return rootComments;
+    return flatCommentsWithVotes;
   }
 
   async voteComment(userId: number, commentId: number, value: 1 | -1 | 0) {
@@ -148,9 +120,10 @@ export class CommentService {
       ? (votes.find((v) => v.userId === userId)?.value ?? 0)
       : 0;
 
-    (comment as any).votes = total;
-    (comment as any).userVote = userVote;
-
-    return comment;
+    return {
+      ...comment,
+      votes: total,
+      userVote,
+    };
   }
 }

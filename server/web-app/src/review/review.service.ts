@@ -84,7 +84,7 @@ export class ReviewService {
   }
 
   private async attachCommentsAndVotesToReview(review: Review, userId: number) {
-    review['comments'] = await this.commentService.getCommentsTreeByReview(
+    review['comments'] = await this.commentService.getCommentsByReview(
       review.id,
       userId,
     );
