@@ -11,6 +11,7 @@ import { api } from '@/shared/utils/axios';
 type AuthContext = {
   token: string | null;
   user: any;
+  loading: boolean;
   setToken: (token: string | null) => void;
   setUser: (user: any) => void;
 };
@@ -28,10 +29,12 @@ export const useAuth = () => {
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const tokenRef = useRef<string | null>(null);
 
   useEffect(() => {
     const initAuth = async () => {
+      setLoading(true);
       try {
         const userResponse = await api.get('/auth/me');
         console.log('/auth/me');
@@ -41,6 +44,8 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } catch (err) {
         setToken(null);
         setUser(null);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -54,6 +59,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return;
       }
 
+      setLoading(true);
       try {
         const res = await api.get('/auth/me');
         console.log('/auth/me');
@@ -62,6 +68,8 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } catch (err) {
         setUser(null);
         setToken(null);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -131,7 +139,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ token, setToken, user, setUser }}>
+    <AuthContext.Provider value={{ token, setToken, user, setUser, loading }}>
       {children}
     </AuthContext.Provider>
   );

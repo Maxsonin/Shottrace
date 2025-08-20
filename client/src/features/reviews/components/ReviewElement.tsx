@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import CommentThread from '../../comments/components/CommentThread';
 import CommentForm from '../../comments/components/CommentForm';
 import { useAuth } from '@/app/providers/AuthProvider';
@@ -13,12 +13,8 @@ import type { Comment } from '@/features/comments/types/comment.type';
 
 type Props = {
   review: Review;
-  isUser?: boolean;
-  onVoteReview: (data: {
-    reviewId: number;
-    userId: number;
-    value: 1 | -1 | 0;
-  }) => void;
+  isUser: boolean;
+  onVoteReview: (reviewId: number, value: 1 | -1 | 0, isUser: boolean) => void;
   onChange?: (review: Review) => void;
   onDelete?: (id: number) => void;
 };
@@ -35,10 +31,6 @@ export default function ReviewElement({
   const [comments, setComments] = useState<Comment[]>(review.comments || []);
 
   const { user } = useAuth();
-
-  useEffect(() => {
-    setComments(review.comments || []);
-  }, [review.comments]);
 
   // utils to update comment tree
   function addCommentToTree(
@@ -155,7 +147,7 @@ export default function ReviewElement({
   return (
     <div
       className="mt-4 p-4 rounded-xl border bg-gray-800"
-      style={{ borderColor: isUser ? '#d1d5db' : 'white' }}
+      style={{ borderColor: isUser ? 'blue' : 'white' }}
     >
       <p className="font-semibold">
         {isUser ? 'You' : review.reviewer.username} rated{' '}
@@ -185,11 +177,7 @@ export default function ReviewElement({
         )}
         <button
           onClick={() =>
-            onVoteReview({
-              reviewId: review.id,
-              userId: user.userId,
-              value: review.userVote === 1 ? 0 : 1,
-            })
+            onVoteReview(review.id, review.userVote === 1 ? 0 : 1, isUser)
           }
           className={`cursor-pointer  text-black px-3 py-1 rounded-lg ${
             review.userVote === 1
@@ -202,11 +190,7 @@ export default function ReviewElement({
 
         <button
           onClick={() =>
-            onVoteReview({
-              reviewId: review.id,
-              userId: user.userId,
-              value: review.userVote === -1 ? 0 : -1,
-            })
+            onVoteReview(review.id, review.userVote === -1 ? 0 : -1, isUser)
           }
           className={`cursor-pointer text-black px-3 py-1 rounded-lg
             ${

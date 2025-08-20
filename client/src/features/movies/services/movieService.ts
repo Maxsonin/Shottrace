@@ -1,3 +1,5 @@
+import type { MovieStats } from '../types/movie.type';
+
 const TMDB_TOKEN = import.meta.env.VITE_TMDB_TOKEN;
 
 export const getMovie = async (movieId: string) => {
@@ -8,9 +10,17 @@ export const getMovie = async (movieId: string) => {
     },
   });
 
-  if (!res.ok) {
-    throw new Error(`Failed to fetch movie: ${res.statusText}`);
-  }
+  if (!res.ok) throw new Error(`Failed to fetch movie: ${res.statusText}`);
 
-  return res.json();
+  const data = await res.json();
+  console.log(data);
+  return data;
+};
+
+export const getMovieStats = async (movieId: string): Promise<MovieStats> => {
+  return {
+    // Currently mock
+    likedCount: Math.floor(Math.random() * 100),
+    watchedCount: Math.floor(Math.random() * 100),
+  };
 };

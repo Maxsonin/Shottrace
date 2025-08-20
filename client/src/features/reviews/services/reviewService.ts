@@ -1,14 +1,21 @@
 import { makeRequest } from '@/shared/utils/axios';
 import type { Review } from '../types/reviews.type';
 
-export const fetchMovieReviews = async (movieId: string, cursor?: number) => {
+// export const getReviewsAuth = async (movieId: string, cursor?: number) => {
+//   const cursorParam = cursor ? `&cursor=${cursor}` : '';
+//   return makeRequest<{ reviews: Review[]; nextCursor: number | null }>(
+//     `/movies/${movieId}/reviews/auth/?limit=10${cursorParam}`
+//   );
+// };
+
+export const getReviews = async (movieId: string, cursor?: number) => {
   const cursorParam = cursor ? `&cursor=${cursor}` : '';
   return makeRequest<{ reviews: Review[]; nextCursor: number | null }>(
     `/movies/${movieId}/reviews?limit=10${cursorParam}`
   );
 };
 
-export const fetchMyReview = async (movieId: string) => {
+export const getUserReview = async (movieId: string) => {
   return makeRequest<Review>(`/movies/${movieId}/reviews/my`);
 };
 

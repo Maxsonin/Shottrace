@@ -1,21 +1,37 @@
-import type { Movie, MoviesStats } from '../types/movie.type';
+import { useQuery } from '@tanstack/react-query';
+import type { MovieWithStats } from '../types/movie.type';
+import { getMovie } from '../services/movieService';
 
-type Props = Movie & MoviesStats;
+type Props = {
+  movieId: string;
+};
 
-export default function MovieDetails({
-  title,
-  poster_path,
-  overview,
-  likedCount,
-  watchedCount,
-}: Props) {
+export default function MovieDetails({ movieId }: Props) {
+  const {
+    data: movie,
+    isPending: moviePending,
+    error: movieError,
+  } = useQuery<MovieWithStats>({
+    queryKey: ['movie', movieId],
+    queryFn: () => getMovie(movieId),
+    staleTime: 1000 * 60 * 60,
+  });
+
+  if (movieError) console.error(movieError);
+
+  if (moviePending) return <div>Loading...</div>;
+  if (!movie) return null;
   return (
     <div>
-      <h2>{title}</h2>
-      <img src={`https://image.tmdb.org/t/p/w500${poster_path}`} alt={title} />
-      <p>{overview}</p>
-      <div>Liked: {likedCount}</div>
-      <div>Watched: {watchedCount}</div>
+      <h2>{movie.title}</h2>
+      <img
+        src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+        alt={movie.title}
+      />
+      <p>{movie.overview}</p>
+      <p>Budget: {movie.budget}</p>
+      <div>Liked: {movie.likedCount}</div>
+      <div>Watched: {movie.watchedCount}</div>
     </div>
   );
 }
