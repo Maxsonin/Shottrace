@@ -1,12 +1,10 @@
-'use client';
-
 import { useState } from 'react';
 import { useAuth } from '@/app/providers/AuthProvider';
 import ReviewForm from './ReviewForm';
-import ReviewElement from './ReviewElement';
 import { useReviews } from '../hooks/useReviews';
 import { useUserReview } from '../hooks/useUserReview';
 import useVoteReview from '../hooks/useVoteReview';
+import ReviewWithComments from './ReviewWithComments';
 
 export default function Reviews({ movieId }: { movieId: string }) {
   const { user } = useAuth();
@@ -47,7 +45,7 @@ export default function Reviews({ movieId }: { movieId: string }) {
               }}
             />
           ) : userReview ? (
-            <ReviewElement
+            <ReviewWithComments
               review={userReview}
               isUser
               onChange={() => setEditMode(true)}
@@ -61,10 +59,10 @@ export default function Reviews({ movieId }: { movieId: string }) {
       )}
 
       {reviews.map((review) => (
-        <ReviewElement
+        <ReviewWithComments
           key={review.id}
           review={review}
-          isUser={user?.userId === review.reviewer.id}
+          isUser={false}
           onVoteReview={voteHandler}
         />
       ))}

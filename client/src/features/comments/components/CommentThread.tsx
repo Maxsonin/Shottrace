@@ -9,24 +9,8 @@ import {
 } from 'react-icons/fa';
 import CommentForm from './CommentForm';
 import type { Comment } from '../types/comment.type';
-
-const dataFormatter = new Intl.DateTimeFormat(undefined, {
-  dateStyle: 'medium',
-  timeStyle: 'short',
-});
-
-// rating manages background color
-function getBgColor(rating: number): string {
-  if (rating === 0) return 'white';
-
-  const clamped = Math.max(-10, Math.min(10, rating));
-
-  if (clamped > 0) {
-    return `hsla(120, 60%, ${95 - clamped * 5}%, 1)`;
-  } else {
-    return `hsla(0, 60%, ${95 - Math.abs(clamped) * 5}%, 1)`;
-  }
-}
+import { formatDate } from '@/shared/utils/dataFormatter';
+import { getBgColor } from '../utils/comments';
 
 export default function CommentThread({
   comments = [],
@@ -89,7 +73,7 @@ export default function CommentThread({
                 </span>
 
                 <span className="ml-3 text-xs text-gray-400">
-                  {dataFormatter.format(Date.parse(comment.createdAt))}
+                  {formatDate(comment.createdAt)}
                 </span>
               </p>
 
