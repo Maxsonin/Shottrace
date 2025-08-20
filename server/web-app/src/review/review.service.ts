@@ -37,28 +37,28 @@ export class ReviewService {
   }
 
   async findAll(userId: number, movieId: number, limit = 10, cursor?: number) {
-    const reviews = await this.prisma.review.findMany({
-      where: { movieId },
-      take: limit,
+    // Fetch limit + 2 to handle possible user review + extra
+    let reviews = await this.prisma.review.findMany({
+      where: { movieId, reviewerId: { not: userId } },
+      take: limit + 2,
       ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       include: {
         reviewer: {
-          select: { username: true },
+          select: { id: true, username: true },
         },
       },
     });
 
-    for (const review of reviews) {
+    const nextCursor = reviews.length > limit ? reviews[limit].id : null;
+
+    const paginatedReviews = reviews.slice(0, limit);
+    for (const review of paginatedReviews) {
       await this.attachCommentsAndVotesToReview(review, userId);
     }
 
-    // Check if there are more reviews
-    const nextCursor =
-      reviews.length === limit ? reviews[reviews.length - 1].id : null;
-
     return {
-      reviews,
+      reviews: paginatedReviews,
       nextCursor,
     };
   }

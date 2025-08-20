@@ -8,6 +8,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ReviewService } from './review.service';
 import { CreateReviewDto } from './dto/create-review.dto';
@@ -15,6 +16,7 @@ import { UserEntity } from 'src/auth/types/auth.type';
 import { User } from 'src/common/decorators/user.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
 import { UpdateReviewDto } from './dto/update-review.dto';
+import { OptionalJwtAuthGuard } from 'src/common/guards/optional-jwt.guard';
 
 @Controller()
 export class ReviewController {
@@ -36,7 +38,7 @@ export class ReviewController {
     return;
   }
 
-  @Public()
+  @UseGuards(OptionalJwtAuthGuard)
   @Get('movies/:movieId/reviews')
   findAll(
     @User('userId') userId: number,
