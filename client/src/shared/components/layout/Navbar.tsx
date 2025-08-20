@@ -1,16 +1,20 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import Modal from '@/shared/components/ui/Modal';
-import PopUpFieldset from '@/shared/components/ui/PopUpFieldset';
 import { useAuth } from '@/app/providers/AuthProvider';
 import SignInForm from '@/features/auth/components/SignInForm';
 import SignUpForm from '@/features/auth/components/SignUpForm';
 import { signOut } from '@/features/auth/services/authService';
 
+import { Dialog, DialogTitle, DialogContent, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+
 function Navbar() {
   const [openSignIn, setOpenSignIn] = useState(false);
   const [openSignUp, setOpenSignUp] = useState(false);
-  const { user } = useAuth();
+
+  const navItemClass = 'uppercase cursor-pointer hover:text-gray-300';
+
+  const { user, loading } = useAuth();
 
   const handleSignOut = async () => {
     try {
@@ -28,77 +32,101 @@ function Navbar() {
             Shottrace
           </div>
 
-          <ul className="flex space-x-6 font-bold">
-            {!user ? (
-              <>
-                <li
-                  className="uppercase cursor-pointer hover:text-gray-300"
-                  onClick={() => setOpenSignIn(true)}
-                >
-                  Sign In
-                </li>
-                <li
-                  className="uppercase cursor-pointer hover:text-gray-300"
-                  onClick={() => setOpenSignUp(true)}
-                >
-                  Create Account
-                </li>
-              </>
-            ) : (
-              <>
-                <li>
-                  <Link
-                    to={`/${user.username}`}
-                    className="uppercase hover:text-gray-300"
+          {!loading && (
+            <ul className="flex space-x-6 font-bold">
+              {!user ? (
+                <>
+                  <li
+                    className={navItemClass}
+                    onClick={() => setOpenSignIn(true)}
                   >
-                    {user.username}
-                  </Link>
-                </li>
-                <li>
-                  <a
-                    href="/"
-                    onClick={handleSignOut}
-                    className="uppercase cursor-pointer hover:text-gray-300"
+                    Sign In
+                  </li>
+                  <li
+                    className={navItemClass}
+                    onClick={() => setOpenSignUp(true)}
                   >
-                    Sign Out
-                  </a>
-                </li>
-              </>
-            )}
-            <li>
-              <Link
-                to="/movies"
-                className="uppercase cursor-pointer hover:text-gray-300"
-              >
-                Movies
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/lists"
-                className="uppercase cursor-pointer hover:text-gray-300"
-              >
-                Lists
-              </Link>
-            </li>
-          </ul>
+                    Create Account
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li>
+                    <Link
+                      to={`/${user.username}`}
+                      className="cursor-pointer hover:text-gray-300"
+                    >
+                      {user.username}
+                    </Link>
+                  </li>
+                  <li>
+                    <a
+                      href="/"
+                      onClick={handleSignOut}
+                      className={navItemClass}
+                    >
+                      Sign Out
+                    </a>
+                  </li>
+                </>
+              )}
+              <li>
+                <Link to="/movies" className={navItemClass}>
+                  Movies
+                </Link>
+              </li>
+              <li>
+                <Link to="/lists" className={navItemClass}>
+                  Lists
+                </Link>
+              </li>
+            </ul>
+          )}
         </div>
       </nav>
 
       {openSignIn && (
-        <PopUpFieldset open={openSignIn} onClose={() => setOpenSignIn(false)}>
-          <SignInForm onClose={() => setOpenSignIn(false)} />
-        </PopUpFieldset>
+        <Dialog open={openSignIn} onClose={() => setOpenSignIn(false)}>
+          <DialogTitle>
+            Sign In
+            <IconButton
+              aria-label="close"
+              onClick={() => setOpenSignIn(false)}
+              sx={{
+                position: 'absolute',
+                right: 8,
+                top: 8,
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent>
+            <SignInForm onClose={() => setOpenSignIn(false)} />
+          </DialogContent>
+        </Dialog>
       )}
 
       {openSignUp && (
-        <Modal
-          open={openSignUp}
-          onClose={() => setOpenSignUp(false)}
-          title="Join Shottrace"
-        >
-          <SignUpForm onClose={() => setOpenSignUp(false)} />
-        </Modal>
+        <Dialog open={openSignUp} onClose={() => setOpenSignUp(false)}>
+          <DialogTitle>
+            Create Account
+            <IconButton
+              aria-label="close"
+              onClick={() => setOpenSignUp(false)}
+              sx={{
+                position: 'absolute',
+                right: 8,
+                top: 8,
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent>
+            <SignUpForm onClose={() => setOpenSignUp(false)} />
+          </DialogContent>
+        </Dialog>
       )}
     </>
   );

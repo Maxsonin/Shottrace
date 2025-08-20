@@ -4,9 +4,10 @@ import { getMovie } from '../services/movieService';
 
 type Props = {
   movieId: string;
+  setBackgroundImage: (url: string) => void;
 };
 
-export default function MovieDetails({ movieId }: Props) {
+export default function MovieDetails({ movieId, setBackgroundImage }: Props) {
   const {
     data: movie,
     isPending: moviePending,
@@ -16,6 +17,10 @@ export default function MovieDetails({ movieId }: Props) {
     queryFn: () => getMovie(movieId),
     staleTime: 1000 * 60 * 60,
   });
+
+  setBackgroundImage(
+    `https://image.tmdb.org/t/p/w1280/${movie?.backdrop_path}`
+  );
 
   if (movieError) console.error(movieError);
 
