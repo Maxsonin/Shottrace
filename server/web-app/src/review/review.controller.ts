@@ -38,6 +38,7 @@ export class ReviewController {
     return;
   }
 
+  @Public()
   @UseGuards(OptionalJwtAuthGuard)
   @Get('movies/:movieId/reviews')
   findAll(
