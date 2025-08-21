@@ -6,8 +6,10 @@ import MainLayout from './layouts/MainLayout';
 import HomePage from './pages/HomePage';
 import MoviePage from './pages/MoviePage';
 import NotFoundPage from './pages/NotFoundPage';
-import './index.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { CssBaseline, ThemeProvider } from '@mui/material';
+import theme from '@/shared/themes/default';
+import './index.css';
 
 const router = createBrowserRouter([
   {
@@ -27,7 +29,10 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <RouterProvider router={router} />
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <RouterProvider router={router} />
+        </ThemeProvider>
       </AuthProvider>
     </QueryClientProvider>
   </StrictMode>

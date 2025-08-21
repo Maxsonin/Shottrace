@@ -1,6 +1,9 @@
+import './MainLayout.css';
 import { Outlet } from 'react-router-dom';
 import Navbar from '@/shared/components/layout/Navbar';
 import { useState } from 'react';
+import Container from '@mui/material/Container';
+import { Box } from '@mui/material';
 
 export type OutletContextType = {
   setBackgroundImage: (img: string) => void;
@@ -12,7 +15,7 @@ const MainLayout = () => {
   );
 
   return (
-    <div className="relative min-h-screen">
+    <Box className="relative min-h-screen">
       {backgroundImage && (
         <div
           className="background-img-fade"
@@ -20,13 +23,19 @@ const MainLayout = () => {
         />
       )}
 
-      <div className="relative z-10 max-w-[950px] mx-auto px-0">
+      <Container
+        maxWidth={false}
+        sx={{
+          position: 'relative',
+          maxWidth: '950px',
+        }}
+      >
         <Navbar />
-        <main>
+        <main className={backgroundImage ? 'mt-[400px]' : ''}>
           <Outlet context={{ setBackgroundImage } as OutletContextType} />
         </main>
-      </div>
-    </div>
+      </Container>
+    </Box>
   );
 };
 

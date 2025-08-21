@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import type { MovieWithStats } from '../types/movie.type';
 import { getMovie } from '../services/movieService';
+import { useEffect } from 'react';
 
 type Props = {
   movieId: string;
@@ -18,9 +19,13 @@ export default function MovieDetails({ movieId, setBackgroundImage }: Props) {
     staleTime: 1000 * 60 * 60,
   });
 
-  setBackgroundImage(
-    `https://image.tmdb.org/t/p/w1280/${movie?.backdrop_path}`
-  );
+  useEffect(() => {
+    if (movie?.backdrop_path) {
+      setBackgroundImage(
+        `https://image.tmdb.org/t/p/w1280/${movie.backdrop_path}`
+      );
+    }
+  }, [movie?.backdrop_path, setBackgroundImage]);
 
   if (movieError) console.error(movieError);
 
