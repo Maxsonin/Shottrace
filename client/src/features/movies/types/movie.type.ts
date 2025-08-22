@@ -9,6 +9,10 @@ export type Movie = {
   genres: { name: string }[];
   runtime: number;
   budget: number;
+  credits: {
+    cast: { name: string; character: string; cast_id: number }[];
+    crew: { job: string; name: string }[];
+  };
 };
 
 export type MovieStats = {
