@@ -16,7 +16,14 @@ const MainLayout = () => {
   );
 
   return (
-    <Box className="relative min-h-screen">
+    <Box
+      className="relative"
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100vh',
+      }}
+    >
       {backgroundImage && (
         <div
           className="background-img-fade"
@@ -29,12 +36,18 @@ const MainLayout = () => {
         sx={{
           position: 'relative',
           maxWidth: '950px',
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
         <Navbar />
-        <main className={backgroundImage ? 'mt-[400px]' : ''}>
+        <Box
+          component="main"
+          sx={{ flex: 1, mt: backgroundImage ? '400px' : 0 }}
+        >
           <Outlet context={{ setBackgroundImage } as OutletContextType} />
-        </main>
+        </Box>
       </Container>
       <Footer />
     </Box>
