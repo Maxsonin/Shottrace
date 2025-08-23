@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import CloseButton from '@/shared/components/ui/CloseButton';
 
 interface CommentFormData {
   initialContent?: string;
@@ -40,7 +39,6 @@ const CommentForm = ({ onSubmit, onClose, data }: CommentFormProps) => {
         <h2 className="text-xl font-semibold">
           {commentId ? 'Edit Comment' : 'Write a Comment'}
         </h2>
-        <CloseButton onClick={onClose} />
       </div>
 
       <textarea

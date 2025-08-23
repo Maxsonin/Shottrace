@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import CloseButton from '@/shared/components/ui/CloseButton';
 
 interface ReviewFormData {
   initialContent?: string;
@@ -142,7 +141,6 @@ const ReviewForm = ({ onSubmit, onClose, data }: ReviewFormProps) => {
     >
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold mb-3">Write a Review</h2>
-        <CloseButton onClick={onClose} />
       </div>
 
       <textarea

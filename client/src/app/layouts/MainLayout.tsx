@@ -4,6 +4,7 @@ import Navbar from '@/shared/components/layout/Navbar';
 import { useState } from 'react';
 import Container from '@mui/material/Container';
 import { Box } from '@mui/material';
+import Footer from '@/shared/components/layout/Footer';
 
 export type OutletContextType = {
   setBackgroundImage: (img: string) => void;
@@ -35,6 +36,7 @@ const MainLayout = () => {
           <Outlet context={{ setBackgroundImage } as OutletContextType} />
         </main>
       </Container>
+      <Footer />
     </Box>
   );
 };
