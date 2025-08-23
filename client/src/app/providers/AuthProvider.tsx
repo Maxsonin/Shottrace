@@ -31,21 +31,24 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const tokenRef = useRef<string | null>(null);
+  const refreshAttemptedRef = useRef(false);
 
   useEffect(() => {
     const initAuth = async () => {
-      setLoading(true);
+      console.log('[AuthProvider] Initializing auth...');
       try {
         const userResponse = await api.get('/auth/me');
-        console.log('/auth/me');
+        console.log('[AuthProvider] /auth/me success:', userResponse.data);
 
         setUser(userResponse.data);
-        console.log(userResponse.data);
       } catch (err) {
         setToken(null);
         setUser(null);
       } finally {
-        setLoading(false);
+        console.log('[AuthProvider] Initial auth check finished');
+        if (!refreshAttemptedRef.current) {
+          setLoading(false);
+        }
       }
     };
 
@@ -55,17 +58,23 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const fetchUser = async () => {
       if (!token) {
+        console.log('[AuthProvider] No token found, setting user to null');
         setUser(null);
+        setLoading(false);
         return;
       }
 
       setLoading(true);
       try {
         const res = await api.get('/auth/me');
-        console.log('/auth/me');
+        console.log('[AuthProvider] /auth/me success with token:', res.data);
 
         setUser(res.data);
       } catch (err) {
+        console.warn(
+          '[AuthProvider] Failed fetching user with token, clearing token and user',
+          err
+        );
         setUser(null);
         setToken(null);
       } finally {
@@ -84,7 +93,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const authInterceptor = api.interceptors.request.use((config) => {
       if (tokenRef.current && !config._retry) {
         config.headers.Authorization = `Bearer ${tokenRef.current}`;
-        console.log('ATTACHING ACCESS TOKEN');
+        console.log('[AuthProvider] Attaching access token to request');
       }
       return config;
     });
@@ -101,31 +110,48 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const originalRequest = err.config;
 
         if (originalRequest.url === '/auth/refresh') {
+          console.warn('[AuthProvider] Refresh token failed, logging out');
           setToken(null);
           setUser(null);
+          setLoading(false);
           return Promise.reject(err);
         }
 
         if (
-          err.response.status === 401 &&
-          err.response.data.message === 'Unauthorized' &&
+          err.response?.status === 401 &&
+          err.response?.data?.message === 'Unauthorized' &&
           !originalRequest._retry
         ) {
+          console.log(
+            '[AuthProvider] 401 Unauthorized, attempting refresh token'
+          );
           originalRequest._retry = true;
+          refreshAttemptedRef.current = true;
+
           try {
-            console.log('/auth/refresh');
             const response = await api.get('/auth/refresh');
+            console.log('[AuthProvider] Refresh token success:', response.data);
 
             setToken(response.data.accessToken);
 
             originalRequest.headers.Authorization = `Bearer ${response.data.accessToken}`;
-            console.log('ATTACHING ACCESS TOKEN');
+            console.log(
+              '[AuthProvider] Retrying original request with new token'
+            );
 
             return api(originalRequest);
           } catch (error) {
+            console.error(
+              '[AuthProvider] Refresh token failed, logging out',
+              error
+            );
             setToken(null);
             setUser(null);
+            setLoading(false);
             return Promise.reject(error);
+          } finally {
+            console.log('[AuthProvider] Refresh attempt finished');
+            setLoading(false);
           }
         }
 
@@ -140,7 +166,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider value={{ token, setToken, user, setUser, loading }}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
