@@ -2,170 +2,137 @@ import {
   createContext,
   useContext,
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
+  type ReactNode,
 } from 'react';
 import { api } from '@/shared/utils/axios';
 
-type AuthContext = {
-  token: string | null;
-  user: any;
+interface User {
+  userId: number;
+  username: string;
+}
+
+interface AuthContextType {
+  user: User | null;
   loading: boolean;
-  setToken: (token: string | null) => void;
-  setUser: (user: any) => void;
+
+  signIn: (accessToken: string) => Promise<void>;
+  signOut: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
+  return context;
 };
 
-const AuthContext = createContext<AuthContext | undefined>(undefined);
+interface AuthProviderProps {
+  children: ReactNode;
+}
 
-export const useAuth = () => {
-  const authContext = useContext(AuthContext);
-  if (!authContext) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return authContext;
-};
-
-const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [token, setToken] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
+const AuthProvider = ({ children }: AuthProviderProps) => {
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+
   const tokenRef = useRef<string | null>(null);
-  const refreshAttemptedRef = useRef(false);
+  const refreshInProgressRef = useRef(false);
 
+  // Request interceptor
   useEffect(() => {
-    const initAuth = async () => {
-      console.log('[AuthProvider] Initializing auth...');
-      try {
-        const userResponse = await api.get('/auth/me');
-        console.log('[AuthProvider] /auth/me success:', userResponse.data);
-
-        setUser(userResponse.data);
-      } catch (err) {
-        setToken(null);
-        setUser(null);
-      } finally {
-        console.log('[AuthProvider] Initial auth check finished');
-        if (!refreshAttemptedRef.current) {
-          setLoading(false);
-        }
-      }
-    };
-
-    initAuth();
-  }, []);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      if (!token) {
-        console.log('[AuthProvider] No token found, setting user to null');
-        setUser(null);
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      try {
-        const res = await api.get('/auth/me');
-        console.log('[AuthProvider] /auth/me success with token:', res.data);
-
-        setUser(res.data);
-      } catch (err) {
-        console.warn(
-          '[AuthProvider] Failed fetching user with token, clearing token and user',
-          err
-        );
-        setUser(null);
-        setToken(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUser();
-  }, [token]);
-
-  useEffect(() => {
-    tokenRef.current = token;
-  }, [token]);
-
-  useLayoutEffect(() => {
-    const authInterceptor = api.interceptors.request.use((config) => {
-      if (tokenRef.current && !config._retry) {
+    const interceptor = api.interceptors.request.use((config) => {
+      if (tokenRef.current) {
         config.headers.Authorization = `Bearer ${tokenRef.current}`;
-        console.log('[AuthProvider] Attaching access token to request');
       }
       return config;
     });
-
-    return () => {
-      api.interceptors.request.eject(authInterceptor);
-    };
+    return () => api.interceptors.request.eject(interceptor);
   }, []);
 
-  useLayoutEffect(() => {
-    const refreshInterceptor = api.interceptors.response.use(
+  // Response interceptor (refresh on 401)
+  useEffect(() => {
+    const interceptor = api.interceptors.response.use(
       (response) => response,
-      async (err) => {
-        const originalRequest = err.config;
+      async (error) => {
+        const originalRequest = error.config;
 
-        if (originalRequest.url === '/auth/refresh') {
-          console.warn('[AuthProvider] Refresh token failed, logging out');
-          setToken(null);
-          setUser(null);
-          setLoading(false);
-          return Promise.reject(err);
-        }
-
-        if (
-          err.response?.status === 401 &&
-          err.response?.data?.message === 'Unauthorized' &&
-          !originalRequest._retry
-        ) {
-          console.log(
-            '[AuthProvider] 401 Unauthorized, attempting refresh token'
-          );
+        if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
-          refreshAttemptedRef.current = true;
 
-          try {
-            const response = await api.get('/auth/refresh');
-            console.log('[AuthProvider] Refresh token success:', response.data);
+          if (!refreshInProgressRef.current) {
+            refreshInProgressRef.current = true;
 
-            setToken(response.data.accessToken);
+            try {
+              const refreshResponse = await api.get('/auth/refresh');
+              const newToken = refreshResponse.data.accessToken;
+              tokenRef.current = newToken;
 
-            originalRequest.headers.Authorization = `Bearer ${response.data.accessToken}`;
-            console.log(
-              '[AuthProvider] Retrying original request with new token'
-            );
-
-            return api(originalRequest);
-          } catch (error) {
-            console.error(
-              '[AuthProvider] Refresh token failed, logging out',
-              error
-            );
-            setToken(null);
-            setUser(null);
-            setLoading(false);
-            return Promise.reject(error);
-          } finally {
-            console.log('[AuthProvider] Refresh attempt finished');
-            setLoading(false);
+              originalRequest.headers.Authorization = `Bearer ${newToken}`;
+              return api(originalRequest);
+            } catch (err) {
+              console.error('Token refresh failed', err);
+              return Promise.reject(err);
+            } finally {
+              refreshInProgressRef.current = false;
+            }
           }
         }
-
-        return Promise.reject(err);
+        return Promise.reject(error);
       }
     );
 
-    return () => {
-      api.interceptors.response.eject(refreshInterceptor);
-    };
+    return () => api.interceptors.response.eject(interceptor);
   }, []);
 
+  // Restore session
+  useEffect(() => {
+    const restoreSession = async () => {
+      try {
+        refreshInProgressRef.current = true;
+
+        const refreshResponse = await api.get('/auth/refresh');
+        const newToken = refreshResponse.data.accessToken;
+        tokenRef.current = newToken;
+
+        const meResponse = await api.get<User>('/auth/me');
+        setUser(meResponse.data);
+      } catch (err) {
+        console.warn('Failed to restore session', err);
+        tokenRef.current = null;
+        setUser(null);
+      } finally {
+        refreshInProgressRef.current = false;
+        setLoading(false);
+      }
+    };
+
+    restoreSession();
+  }, []);
+
+  const signIn = async (accessToken: string) => {
+    tokenRef.current = accessToken;
+    try {
+      const res = await api.get<User>('/auth/me');
+      setUser(res.data);
+    } catch (err) {
+      console.error('Failed to fetch user after signIn', err);
+    }
+  };
+
+  const signOut = async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch (err) {
+      console.error('Failed to log out', err);
+    } finally {
+      tokenRef.current = null;
+      setUser(null);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ token, setToken, user, setUser, loading }}>
+    <AuthContext.Provider value={{ user, loading, signIn, signOut }}>
       {!loading && children}
     </AuthContext.Provider>
   );

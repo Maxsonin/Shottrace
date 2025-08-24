@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { signUp } from '../services/authService';
 import { TextField, Button, Box } from '@mui/material';
+import { useAuth } from '@/app/providers/AuthProvider';
 
 function SignUpForm({ onClose }: { onClose: () => void }) {
   const [email, setEmail] = useState('');
@@ -8,12 +9,14 @@ function SignUpForm({ onClose }: { onClose: () => void }) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const { signIn } = useAuth();
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await signUp({ email, username, password });
-      window.location.href = '/';
+      const res = await signUp({ email, username, password });
+      await signIn(res.accessToken);
       onClose();
     } catch (error) {
       console.error(error);

@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/app/providers/AuthProvider';
 import SignInForm from '@/features/auth/components/SignInForm';
 import SignUpForm from '@/features/auth/components/SignUpForm';
-import { signOut } from '@/features/auth/services/authService';
 
 import { Dialog, DialogTitle, DialogContent, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
@@ -14,13 +13,14 @@ function Navbar() {
 
   const navItemClass = 'uppercase cursor-pointer hover:text-gray-300';
 
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
 
   const handleSignOut = async () => {
     try {
       await signOut();
     } catch (error) {
-      alert('signOut failed');
+      console.error('Sign out failed', error);
+      alert('Sign out failed');
     }
   };
 
@@ -60,11 +60,7 @@ function Navbar() {
                     </Link>
                   </li>
                   <li>
-                    <a
-                      href="/"
-                      onClick={handleSignOut}
-                      className={navItemClass}
-                    >
+                    <a onClick={() => handleSignOut()} className={navItemClass}>
                       Sign Out
                     </a>
                   </li>

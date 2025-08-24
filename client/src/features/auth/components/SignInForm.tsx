@@ -1,18 +1,21 @@
 import { useState } from 'react';
 import { signIn } from '../services/authService';
 import { TextField, Button, Box } from '@mui/material';
+import { useAuth } from '@/app/providers/AuthProvider';
 
 function SignInForm({ onClose }: { onClose: () => void }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const { signIn: signInAuth } = useAuth();
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await signIn({ username, password });
-      window.location.href = '/';
+      const res = await signIn({ username, password });
+      signInAuth(res.accessToken); // auto-login
       onClose();
     } catch (error) {
       console.error(error);

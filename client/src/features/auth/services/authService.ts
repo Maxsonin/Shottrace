@@ -14,7 +14,7 @@ export const signIn = async ({
       password,
     },
   });
-  return response.data;
+  return response;
 };
 
 export const signUp = async ({
@@ -34,7 +34,7 @@ export const signUp = async ({
       password,
     },
   });
-  return response.data;
+  return response;
 };
 
 export const signOut = async () => {
