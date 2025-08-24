@@ -29,21 +29,23 @@ export default function useVoteReview(movieId: string, userId?: number) {
             : old
       );
     } else {
-      queryClient.setQueryData<ReviewsResponse>(['reviews', movieId], (old) =>
-        old
-          ? {
-              ...old,
-              reviews: old.reviews.map((r) =>
-                r.id === reviewId
-                  ? {
-                      ...r,
-                      votes: (r.votes ?? 0) - (r.userVote ?? 0) + value,
-                      userVote: value,
-                    }
-                  : r
-              ),
-            }
-          : old
+      queryClient.setQueryData<ReviewsResponse>(
+        ['reviews', movieId, userId],
+        (old) =>
+          old
+            ? {
+                ...old,
+                reviews: old.reviews.map((r) =>
+                  r.id === reviewId
+                    ? {
+                        ...r,
+                        votes: (r.votes ?? 0) - (r.userVote ?? 0) + value,
+                        userVote: value,
+                      }
+                    : r
+                ),
+              }
+            : old
       );
     }
   };

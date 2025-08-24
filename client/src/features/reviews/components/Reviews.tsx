@@ -8,7 +8,7 @@ import ReviewWithComments from './ReviewWithComments';
 import { Typography, Box, Button, CircularProgress } from '@mui/material';
 
 export default function Reviews({ movieId }: { movieId: string }) {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const userId = user?.userId;
 
   const [writeMode, setWriteMode] = useState(false);
@@ -17,11 +17,11 @@ export default function Reviews({ movieId }: { movieId: string }) {
   const { userReview, addOrUpdateUserReview, deleteUserReviewHandler } =
     useUserReview(movieId, userId);
 
-  const { reviews, reviewsLoading, reviewsError } = useReviews(movieId);
+  const { reviews, reviewsLoading, reviewsError } = useReviews(movieId, userId);
 
   const { voteHandler } = useVoteReview(movieId, userId);
 
-  if (loading || reviewsLoading)
+  if (reviewsLoading)
     return (
       <Box display="flex" justifyContent="center" alignItems="center" p={2}>
         <CircularProgress />
@@ -56,17 +56,28 @@ export default function Reviews({ movieId }: { movieId: string }) {
               }}
             />
           ) : userReview ? (
-            <ReviewWithComments
-              review={userReview}
-              isUser
-              onChange={() => setEditMode(true)}
-              onVoteReview={voteHandler}
-              onDelete={deleteUserReviewHandler}
-            />
+            <Box mb={4}>
+              <Typography
+                ml={2}
+                component="h5"
+                fontSize={24}
+                fontWeight="bold"
+                mb={2}
+              >
+                Your review
+              </Typography>
+              <ReviewWithComments
+                review={userReview}
+                isUser
+                onChange={() => setEditMode(true)}
+                onVoteReview={voteHandler}
+                onDelete={deleteUserReviewHandler}
+              />
+            </Box>
           ) : (
             <Button
               variant="contained"
-              color="primary"
+              color="success"
               onClick={() => setWriteMode(true)}
               sx={{ margin: 'auto', display: 'block', my: 2 }}
             >
@@ -76,11 +87,21 @@ export default function Reviews({ movieId }: { movieId: string }) {
         </>
       )}
 
-      <Typography component="h5" fontSize={24} fontWeight="bold" mb={2}>
+      <Typography ml={2} component="h5" fontSize={24} fontWeight="bold">
         Reviews
       </Typography>
 
-      <Box mt={3}>
+      <Box mt={1}>
+        {reviews.length === 0 &&
+          (!userReview ? (
+            <Typography ml={2} fontSize={18}>
+              It's empty here🤷‍♂️
+            </Typography>
+          ) : (
+            <Typography ml={2} fontSize={18}>
+              Only you reviewed this movie👀
+            </Typography>
+          ))}
         {reviews.map((review) => (
           <ReviewWithComments
             key={review.id}

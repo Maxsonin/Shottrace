@@ -6,7 +6,7 @@ export type Review = {
   updatedAt: string;
   content: string;
   votes: number;
-  userVote: number;
+  userVote: -1 | 1 | 0;
   stars: number;
   reviewer: {
     id: number;

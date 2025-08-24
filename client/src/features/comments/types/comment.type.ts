@@ -4,7 +4,7 @@ export type Comment = {
   updatedAt: string;
   content: string;
   votes: number;
-  userVote: number;
+  userVote: -1 | 1 | 0;
   reviewId: number;
   parentId: number | null;
   commenter: {

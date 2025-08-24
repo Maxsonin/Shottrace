@@ -12,8 +12,8 @@ const theme = createTheme({
       secondary: 'rgb(255, 255, 255)',
     },
     customColors: {
-      danger: 'rgb(239, 68, 68)',
-      success: 'rgb(34, 197, 94)',
+      like: 'rgb(34, 197, 94)',
+      dislike: 'rgb(239, 68, 68)',
     },
   },
   typography: {

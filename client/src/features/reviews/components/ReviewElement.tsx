@@ -1,5 +1,10 @@
 import { useAuth } from '@/app/providers/AuthProvider';
 import type { Review } from '../types/reviews.type';
+import Vote from '@/shared/components/ui/Vote';
+import { Box, Typography, Paper, Button, Stack, Rating } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ReplyIcon from '@mui/icons-material/Reply';
 
 type Props = {
   review: Review;
@@ -7,6 +12,7 @@ type Props = {
   onVoteReview: (reviewId: number, value: 1 | -1 | 0, isUser: boolean) => void;
   onChange?: (review: Review) => void;
   onDelete?: (id: number) => void;
+  onReply?: () => void;
 };
 
 export default function ReviewElement({
@@ -15,63 +21,76 @@ export default function ReviewElement({
   onVoteReview,
   onChange,
   onDelete,
+  onReply,
 }: Props) {
   const { user } = useAuth();
 
   return (
-    <div
-      className="mt-4 p-4 rounded-xl border bg-gray-800"
-      style={{ borderColor: isUser ? 'blue' : 'white' }}
+    <Paper
+      sx={{
+        mt: 2,
+        py: 2,
+        px: 4,
+        border: isUser ? '4px solid' : '2px olid',
+        borderColor: isUser ? 'green' : 'grey.300',
+        borderRadius: 5,
+      }}
     >
-      <p className="font-semibold">
-        {isUser ? 'You' : review.reviewer.username} rated{' '}
-        <span className="text-yellow-500">{review.stars}⭐</span>
-        Rating: {review.votes}
-      </p>
-      <p className="mt-2">{review.content}</p>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Typography fontSize={20}>
+          <Box component="span" fontWeight="bold">
+            {isUser ? 'You' : review.reviewer.username}
+          </Box>{' '}
+          rated
+        </Typography>
+        <Rating
+          name="read-only-rating"
+          value={review.stars}
+          precision={0.5}
+          readOnly
+        />
+      </Box>
 
-      <div className="mt-3 flex gap-2">
+      <Typography mt={1}>{review.content}</Typography>
+
+      <Stack direction="row" gap={1} pt={1}>
+        <Vote
+          votes={review.votes}
+          userVote={review.userVote}
+          onVote={(value) => onVoteReview(review.id, value, isUser)}
+        />
+
+        <Button
+          color="primary"
+          size="small"
+          startIcon={<ReplyIcon />}
+          onClick={onReply}
+        >
+          Reply
+        </Button>
+
         {user && isUser && (
           <>
-            <button
+            <Button
+              color="warning"
+              size="small"
+              startIcon={<EditIcon />}
               onClick={() => onChange?.(review)}
-              className="bg-amber-500 text-white px-3 py-1 rounded-lg hover:bg-amber-600"
             >
               Edit
-            </button>
-            <button
+            </Button>
+
+            <Button
+              color="error"
+              size="small"
+              startIcon={<DeleteIcon />}
               onClick={() => onDelete?.(review.id)}
-              className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600"
             >
               Delete
-            </button>
+            </Button>
           </>
         )}
-        <button
-          onClick={() =>
-            onVoteReview(review.id, review.userVote === 1 ? 0 : 1, isUser)
-          }
-          className={`px-3 py-1 rounded-lg ${
-            review.userVote === 1
-              ? 'bg-green-600 text-black'
-              : 'bg-white text-black hover:bg-green-600'
-          }`}
-        >
-          Like
-        </button>
-        <button
-          onClick={() =>
-            onVoteReview(review.id, review.userVote === -1 ? 0 : -1, isUser)
-          }
-          className={`px-3 py-1 rounded-lg ${
-            review.userVote === -1
-              ? 'bg-red-600 text-black'
-              : 'bg-white text-black hover:bg-red-600'
-          }`}
-        >
-          Dislike
-        </button>
-      </div>
-    </div>
+      </Stack>
+    </Paper>
   );
 }

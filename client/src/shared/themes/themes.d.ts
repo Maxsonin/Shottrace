@@ -3,14 +3,14 @@ import '@mui/material/styles';
 declare module '@mui/material/styles' {
   interface Palette {
     customColors: {
-      danger: string;
-      success: string;
+      like: string;
+      dislike: string;
     };
   }
   interface PaletteOptions {
     customColors: {
-      danger: string;
-      success: string;
+      like: string;
+      dislike: string;
     };
   }
 }

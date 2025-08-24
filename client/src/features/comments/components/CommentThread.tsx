@@ -1,16 +1,15 @@
 import { useState } from 'react';
 import { useAuth } from '@/app/providers/AuthProvider';
-import {
-  FaArrowUp,
-  FaTrash,
-  FaEdit,
-  FaReply,
-  FaArrowDown,
-} from 'react-icons/fa';
 import CommentForm from './CommentForm';
 import type { Comment } from '../types/comment.type';
 import { formatDate } from '@/shared/utils/dataFormatter';
 import { getBgColor } from '../utils/comments';
+import Vote from '@/shared/components/ui/Vote';
+import { Box, Paper, Typography, Button, Stack } from '@mui/material';
+import ReplyIcon from '@mui/icons-material/Reply';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import theme from '@/shared/themes/default';
 
 export default function CommentThread({
   comments = [],
@@ -48,39 +47,112 @@ export default function CommentThread({
         const isReplying = replyCommentId === comment.id;
 
         return (
-          <div
+          <Box
             key={comment.id}
-            className="mt-3 pl-4"
-            style={{
-              marginLeft: `${level * 20}px`,
-              borderLeft: isUserComment
-                ? '8px solid #3b82f6'
-                : '2px solid #d1d5db',
+            sx={{
+              mt: 1,
+              ml: level * 2,
+              pl: 2,
+              borderLeft: isUserComment ? '4px solid' : '2px solid',
+              borderColor: isUserComment ? 'primary.main' : 'grey.400',
+              borderLeftColor: isUserComment
+                ? theme.palette.customColors.like
+                : 'grey.400',
             }}
           >
-            <div
-              className="shadow-md rounded-xl p-3 transition flex flex-col"
-              style={{ backgroundColor: bgColor }}
+            <Paper
+              elevation={2}
+              sx={{
+                py: 2,
+                px: 4,
+                backgroundColor: bgColor,
+              }}
             >
-              <p className="text-sm text-gray-600 flex items-center gap-2">
-                <strong className="text-black">
+              {/* Header */}
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent={'space-between'}
+                spacing={2}
+              >
+                <Typography fontWeight="bold">
                   {isUserComment ? 'You' : comment.commenter.username}
-                </strong>
-
-                <span className="flex items-center text-green-600">
-                  <FaArrowUp className="mr-1" />
-                  {comment.votes}
-                </span>
-
-                <span className="ml-3 text-xs text-gray-400">
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
                   {formatDate(comment.createdAt)}
-                </span>
-              </p>
+                </Typography>
+              </Stack>
 
-              <p className="mt-2 text-gray-700">{comment.content}</p>
+              {/* Content */}
+              <Typography sx={{ mt: 1 }}>{comment.content}</Typography>
 
-              {user &&
-                (isEditing || isReplying ? (
+              {/* Actions */}
+              <Stack
+                direction="row"
+                spacing={2}
+                alignItems="center"
+                sx={{ mt: 2 }}
+              >
+                <Vote
+                  votes={comment.votes}
+                  userVote={comment.userVote}
+                  onVote={(value) =>
+                    onVoteComment({
+                      commentId: comment.id,
+                      userId: user.userId,
+                      value,
+                    })
+                  }
+                />
+
+                {((user && !isEditing) || !isReplying) && (
+                  <Stack direction="row" spacing={1}>
+                    <Button
+                      startIcon={<ReplyIcon />}
+                      size="small"
+                      onClick={() => setReplyCommentId(comment.id)}
+                    >
+                      Reply
+                    </Button>
+
+                    {isUserComment && (
+                      <>
+                        <Button
+                          startIcon={<EditIcon />}
+                          size="small"
+                          color="primary"
+                          onClick={() => setEditCommentId(comment.id)}
+                        >
+                          Edit
+                        </Button>
+
+                        <Button
+                          startIcon={<DeleteIcon />}
+                          size="small"
+                          color="error"
+                          onClick={() => onDelete(comment.id)}
+                        >
+                          Delete
+                        </Button>
+                      </>
+                    )}
+                  </Stack>
+                )}
+              </Stack>
+            </Paper>
+
+            <Box
+              sx={{
+                mt: 1,
+                ml: level * 2,
+                pl: 2,
+                borderLeft: '4px solid',
+                borderColor: 'primary.main',
+                borderLeftColor: theme.palette.customColors.like,
+              }}
+            >
+              {isEditing ||
+                (isReplying && (
                   <CommentForm
                     onSubmit={(formData) => {
                       addOrUpdateUserComment(formData);
@@ -98,71 +170,8 @@ export default function CommentThread({
                       parentId: isReplying ? comment.id : null,
                     }}
                   />
-                ) : (
-                  <div className="mt-3 flex gap-4 text-sm">
-                    <button
-                      onClick={() =>
-                        onVoteComment({
-                          commentId: comment.id,
-                          userId: user.userId,
-                          value: comment.userVote === 1 ? 0 : 1,
-                        })
-                      }
-                      className={`cursor-pointer flex items-center gap-1 transition 
-                        ${
-                          comment.userVote === 1
-                            ? 'text-green-600 font-bold'
-                            : 'text-gray-700 hover:text-green-600'
-                        }`}
-                    >
-                      <FaArrowUp /> Like
-                    </button>
-
-                    <button
-                      onClick={() =>
-                        onVoteComment({
-                          commentId: comment.id,
-                          userId: user.userId,
-                          value: comment.userVote === -1 ? 0 : -1,
-                        })
-                      }
-                      className={`cursor-pointer flex items-center gap-1 transition 
-                        ${
-                          comment.userVote === -1
-                            ? 'text-red-600 font-bold'
-                            : 'text-gray-700 hover:text-red-600'
-                        }`}
-                    >
-                      <FaArrowDown /> DisLike
-                    </button>
-
-                    <button
-                      onClick={() => setReplyCommentId(comment.id)}
-                      className=" text-gray-700 cursor-pointer flex items-center gap-1 hover:text-purple-600 transition"
-                    >
-                      <FaReply /> Reply
-                    </button>
-
-                    {isUserComment && (
-                      <>
-                        <button
-                          onClick={() => setEditCommentId(comment.id)}
-                          className="text-gray-700 cursor-pointer flex items-center gap-1 hover:text-blue-600 transition"
-                        >
-                          <FaEdit /> Edit
-                        </button>
-
-                        <button
-                          onClick={() => onDelete(comment.id)}
-                          className="text-gray-700 cursor-pointer flex items-center gap-1 hover:text-red-600 transition"
-                        >
-                          <FaTrash /> Delete
-                        </button>
-                      </>
-                    )}
-                  </div>
                 ))}
-            </div>
+            </Box>
 
             {comment.children?.length > 0 && (
               <CommentThread
@@ -173,7 +182,7 @@ export default function CommentThread({
                 addOrUpdateUserComment={addOrUpdateUserComment}
               />
             )}
-          </div>
+          </Box>
         );
       })}
     </>

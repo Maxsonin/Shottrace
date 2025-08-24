@@ -4,9 +4,9 @@ import type { Review } from '../types/reviews.type';
 
 type ReviewsResponse = { reviews: Review[]; nextCursor: number | null };
 
-export function useReviews(movieId: string) {
+export function useReviews(movieId: string, userId?: number) {
   const { data, isLoading, error } = useQuery<ReviewsResponse>({
-    queryKey: ['reviews', movieId],
+    queryKey: ['reviews', movieId, userId],
     queryFn: () => getReviews(movieId),
     enabled: !!movieId,
   });
