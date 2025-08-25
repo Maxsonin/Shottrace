@@ -12,8 +12,8 @@ export class ReviewService {
     private readonly commentService: CommentService,
   ) {}
 
-  create(userId: number, dto: CreateReviewDto) {
-    return this.prisma.review.create({
+  async create(userId: number, dto: CreateReviewDto) {
+    const review = await this.prisma.review.create({
       data: {
         reviewerId: userId,
         movieId: dto.movieId,
@@ -21,6 +21,13 @@ export class ReviewService {
         stars: dto.stars,
       },
     });
+
+    // Preload comments and votes
+    review['comments'] = [];
+    review['votes'] = 0;
+    review['userVote'] = 0;
+
+    return review;
   }
 
   update(id: number, data: UpdateReviewDto) {
