@@ -11,7 +11,17 @@ export function setupApp(app: INestApplication, options: SetupAppOptions) {
   const { globalPrefix, frontendOrigin } = options;
 
   // Global pipes & filters
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true, // convert plain JSON to DTO instances
+      transformOptions: {
+        // automatically convert types based on TypeScript types
+        enableImplicitConversion: true,
+      },
+    }),
+  );
+
   app.useGlobalFilters(new PrismaExceptionFilter());
 
   // Cookie parser

@@ -20,27 +20,25 @@ export class ReviewService {
         content: dto.content,
         stars: dto.stars,
       },
+      include: {
+        reviewer: { select: { id: true, username: true } },
+      },
     });
-
-    // Preload comments and votes
-    review['comments'] = [];
-    review['votes'] = 0;
-    review['userVote'] = 0;
 
     return review;
   }
 
-  update(id: number, data: UpdateReviewDto) {
-    return this.prisma.review.update({
+  async update(id: number, data: UpdateReviewDto) {
+    return await this.prisma.review.update({
       where: { id },
       data: { content: data.content, stars: data.stars },
+      select: { content: true, stars: true, updatedAt: true },
     });
   }
 
-  remove(id: number) {
-    return this.prisma.review.delete({
-      where: { id },
-    });
+  async remove(id: number) {
+    await this.prisma.review.delete({ where: { id } });
+    return { id };
   }
 
   async findAll(userId: number, movieId: number, limit = 10, cursor?: number) {
@@ -90,6 +88,20 @@ export class ReviewService {
     return userReview;
   }
 
+  async voteReview(userId: number, reviewId: number, value: 1 | -1 | 0) {
+    if (value === 0) {
+      return this.prisma.vote.deleteMany({
+        where: { userId, reviewId },
+      });
+    }
+
+    return this.prisma.vote.upsert({
+      where: { userId_reviewId: { userId, reviewId } },
+      update: { value },
+      create: { userId, reviewId, value },
+    });
+  }
+
   private async attachCommentsAndVotesToReview(review: Review, userId: number) {
     review['comments'] = await this.commentService.getCommentsByReview(
       review.id,
@@ -106,19 +118,5 @@ export class ReviewService {
 
     review['votes'] = total;
     review['userVote'] = userVote;
-  }
-
-  async voteReview(userId: number, reviewId: number, value: 1 | -1 | 0) {
-    if (value === 0) {
-      return this.prisma.vote.deleteMany({
-        where: { userId, reviewId },
-      });
-    }
-
-    return this.prisma.vote.upsert({
-      where: { userId_reviewId: { userId, reviewId } },
-      update: { value },
-      create: { userId, reviewId, value },
-    });
   }
 }
