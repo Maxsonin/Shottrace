@@ -1,4 +1,13 @@
 import React, { useState } from 'react';
+import {
+  Button,
+  Paper,
+  TextField,
+  Typography,
+  Stack,
+  IconButton,
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 
 interface CommentFormData {
   initialContent?: string;
@@ -24,38 +33,54 @@ const CommentForm = ({ onSubmit, onClose, data }: CommentFormProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!content.trim()) return alert('Please write your comment.');
+    if (!content.trim()) {
+      alert('Please write your comment.');
+      return;
+    }
 
     onSubmit({ reviewId, commentId, parentId, content });
     setContent('');
   };
 
   return (
-    <form
+    <Paper
+      component="form"
       onSubmit={handleSubmit}
-      className="p-4 bg-black rounded-xl shadow-lg max-w-lg"
+      elevation={4}
+      sx={{
+        p: 3,
+        position: 'relative',
+      }}
     >
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-xl font-semibold">
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
+        <Typography variant="h6" fontWeight="bold">
           {commentId ? 'Edit Comment' : 'Write a Comment'}
-        </h2>
-      </div>
+        </Typography>
+        <IconButton onClick={onClose} size="small">
+          <CloseIcon />
+        </IconButton>
+      </Stack>
 
-      <textarea
-        className="w-full border rounded-lg p-3 mb-3 focus:outline-none focus:ring-2 focus:ring-green-500"
-        rows={4}
+      <TextField
+        fullWidth
+        multiline
+        maxRows={12}
+        variant="outlined"
         placeholder="Write your comment here..."
         value={content}
         onChange={(e) => setContent(e.target.value)}
+        sx={{ mb: 2 }}
       />
 
-      <button
-        type="submit"
-        className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-xl text-lg"
-      >
+      <Button type="submit" variant="contained" color="success">
         {commentId ? 'Update Comment' : 'Submit Comment'}
-      </button>
-    </form>
+      </Button>
+    </Paper>
   );
 };
 

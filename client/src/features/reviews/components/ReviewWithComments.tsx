@@ -3,6 +3,8 @@ import ReviewElement from './ReviewElement';
 import type { Review } from '../types/reviews.type';
 import ReviewComments from '@/features/comments/components/ReviewComments';
 import { Box, Typography } from '@mui/material';
+import useComments from '@/features/comments/hooks/useComments';
+import type { Comment } from '@/features/comments/types/comment.type';
 
 type Props = {
   review: Review;
@@ -13,40 +15,53 @@ type Props = {
 };
 
 export default function ReviewWithComments(props: Props) {
-  const { review } = props;
+  const { review, isUser, onVoteReview, onChange, onDelete } = props;
   const [replying, setReplying] = useState(false);
   const [showComments, setShowComments] = useState(false);
 
+  const initialComments: Comment[] = review.comments || [];
+
+  const { comments, addOrUpdateUserComment, deleteUserComment, onVoteComment } =
+    useComments(initialComments);
+
+  const topCommentsCount = comments.filter((c) => c.parentId === null).length;
   return (
     <Box>
       <ReviewElement
-        {...props}
+        review={review}
+        isUser={isUser}
+        onVoteReview={onVoteReview}
+        onChange={onChange}
+        onDelete={onDelete}
         onReply={() => {
           setReplying(true);
           setShowComments(true);
         }}
       />
 
-      {review.comments?.length > 0 && (
+      {(topCommentsCount > 0 || replying) && (
         <Box mt={1} ml={2}>
           <Typography
             sx={{ cursor: 'pointer' }}
             onClick={() => setShowComments(!showComments)}
           >
             {showComments
-              ? 'Hide Comments'
-              : `View all ${review.comments.length} comments`}
+              ? 'Hide replies'
+              : `View all ${topCommentsCount} replies`}
           </Typography>
         </Box>
       )}
 
       <ReviewComments
         reviewId={review.id}
-        initialComments={review.comments || []}
         replying={replying}
         setReplying={setReplying}
         showComments={showComments}
         setShowComments={setShowComments}
+        comments={comments}
+        addOrUpdateUserComment={addOrUpdateUserComment}
+        deleteUserComment={deleteUserComment}
+        onVoteComment={onVoteComment}
       />
     </Box>
   );

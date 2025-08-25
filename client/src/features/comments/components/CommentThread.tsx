@@ -60,52 +60,66 @@ export default function CommentThread({
                 : 'grey.400',
             }}
           >
-            <Paper
-              elevation={2}
-              sx={{
-                py: 2,
-                px: 4,
-                backgroundColor: bgColor,
-              }}
-            >
-              {/* Header */}
-              <Stack
-                direction="row"
-                alignItems="center"
-                justifyContent={'space-between'}
-                spacing={2}
+            {isEditing ? (
+              <CommentForm
+                onSubmit={(data) => {
+                  addOrUpdateUserComment({ ...data, commentId: comment.id });
+                  setEditCommentId(null);
+                }}
+                onClose={() => setEditCommentId(null)}
+                data={{
+                  initialContent: comment.content,
+                  commentId: comment.id,
+                  reviewId: comment.reviewId,
+                  parentId: comment.parentId ?? null,
+                }}
+              />
+            ) : (
+              <Paper
+                elevation={2}
+                sx={{
+                  py: 2,
+                  px: 4,
+                  backgroundColor: bgColor,
+                }}
               >
-                <Typography fontWeight="bold">
-                  {isUserComment ? 'You' : comment.commenter.username}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {formatDate(comment.createdAt)}
-                </Typography>
-              </Stack>
+                {/* Header */}
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent={'space-between'}
+                  spacing={2}
+                >
+                  <Typography fontWeight="bold">
+                    {isUserComment ? 'You' : comment.commenter.username}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {formatDate(comment.createdAt)}
+                  </Typography>
+                </Stack>
 
-              {/* Content */}
-              <Typography sx={{ mt: 1 }}>{comment.content}</Typography>
+                {/* Content */}
+                <Typography sx={{ mt: 1 }}>{comment.content}</Typography>
 
-              {/* Actions */}
-              <Stack
-                direction="row"
-                spacing={2}
-                alignItems="center"
-                sx={{ mt: 2 }}
-              >
-                <Vote
-                  votes={comment.votes}
-                  userVote={comment.userVote}
-                  onVote={(value) =>
-                    onVoteComment({
-                      commentId: comment.id,
-                      userId: user.userId,
-                      value,
-                    })
-                  }
-                />
+                {/* Actions */}
+                <Stack
+                  direction="row"
+                  spacing={2}
+                  alignItems="center"
+                  sx={{ mt: 2 }}
+                >
+                  <Vote
+                    votes={comment.votes}
+                    userVote={comment.userVote}
+                    onVote={(value) =>
+                      onVoteComment({
+                        commentId: comment.id,
+                        userId: user.userId,
+                        value,
+                      })
+                    }
+                  />
 
-                {((user && !isEditing) || !isReplying) && (
                   <Stack direction="row" spacing={1}>
                     <Button
                       startIcon={<ReplyIcon />}
@@ -137,9 +151,9 @@ export default function CommentThread({
                       </>
                     )}
                   </Stack>
-                )}
-              </Stack>
-            </Paper>
+                </Stack>
+              </Paper>
+            )}
 
             <Box
               sx={{
@@ -151,26 +165,25 @@ export default function CommentThread({
                 borderLeftColor: theme.palette.customColors.like,
               }}
             >
-              {isEditing ||
-                (isReplying && (
-                  <CommentForm
-                    onSubmit={(formData) => {
-                      addOrUpdateUserComment(formData);
-                      setEditCommentId(null);
-                      setReplyCommentId(null);
-                    }}
-                    onClose={() => {
-                      setEditCommentId(null);
-                      setReplyCommentId(null);
-                    }}
-                    data={{
-                      initialContent: isEditing ? comment.content : '',
-                      commentId: isEditing ? comment.id : undefined,
-                      reviewId: comment.reviewId,
-                      parentId: isReplying ? comment.id : null,
-                    }}
-                  />
-                ))}
+              {isReplying && (
+                <CommentForm
+                  onSubmit={(formData) => {
+                    addOrUpdateUserComment(formData);
+                    setEditCommentId(null);
+                    setReplyCommentId(null);
+                  }}
+                  onClose={() => {
+                    setEditCommentId(null);
+                    setReplyCommentId(null);
+                  }}
+                  data={{
+                    initialContent: isEditing ? comment.content : '',
+                    commentId: isEditing ? comment.id : undefined,
+                    reviewId: comment.reviewId,
+                    parentId: isReplying ? comment.id : null,
+                  }}
+                />
+              )}
             </Box>
 
             {comment.children?.length > 0 && (
