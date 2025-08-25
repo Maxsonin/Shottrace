@@ -6,13 +6,13 @@ import { JwtAuthGuard } from './common/guards/jwt.guard';
 import { ConfigModule } from '@nestjs/config';
 import { ReviewModule } from './review/review.module';
 import { CommentModule } from './comment/comment.module';
-import appConfig from './config/app.config';
+import envConfig from './config/env.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig],
+      load: [envConfig],
     }),
     AuthModule,
     PrismaModule,

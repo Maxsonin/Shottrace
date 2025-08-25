@@ -7,7 +7,6 @@ const envSchema = z.object({
     .string()
     .default('3000')
     .transform((val) => parseInt(val, 10)),
-
   FRONTEND_ORIGIN: z.string().default('http://localhost:5173'),
 
   DATABASE_URL: z.string(),
@@ -15,9 +14,11 @@ const envSchema = z.object({
 
 const parsedEnv = envSchema.parse(process.env);
 
-export default () => ({
+const envConfig = () => ({
   api: { globalPrefix: parsedEnv.API_GLOBAL_PREFIX },
   server: { port: parsedEnv.PORT },
   cors: { origin: parsedEnv.FRONTEND_ORIGIN },
   database: { url: parsedEnv.DATABASE_URL },
 });
+
+export default envConfig;
