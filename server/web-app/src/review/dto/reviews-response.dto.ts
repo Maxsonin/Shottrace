@@ -30,7 +30,7 @@ export class ReviewResponseDto {
   movieId: number;
 
   @ApiProperty({ type: ReviewerDto })
-  @ValidateNested({ each: true })
+  @ValidateNested()
   @Type(() => ReviewerDto)
   reviewer: ReviewerDto;
 

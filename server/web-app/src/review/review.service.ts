@@ -75,9 +75,7 @@ export class ReviewService {
         movieId,
       },
       include: {
-        reviewer: {
-          select: { username: true },
-        },
+        reviewer: { select: { id: true, username: true } },
       },
     });
 

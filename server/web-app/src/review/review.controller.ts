@@ -26,6 +26,7 @@ import {
 } from '@nestjs/swagger';
 import { ReviewResponseDto } from './dto/reviews-response.dto';
 import { ResponseValidationInterceptor } from 'src/common/interceptors/response-validation.interceptor';
+import { PaginatedReviewsResponseDto } from './dto/paginated-reviews-response.dto';
 
 @Controller()
 export class ReviewController {
@@ -81,9 +82,17 @@ export class ReviewController {
   }
 
   @ApiOperation({ summary: 'Get paginated reviews for a movie' })
+  @ApiResponse({
+    status: 200,
+    description: 'Reviews retrieved successfully',
+    type: PaginatedReviewsResponseDto,
+  })
   @Public()
   @UseGuards(OptionalJwtAuthGuard)
   @Get('movies/:movieId/reviews')
+  @UseInterceptors(
+    new ResponseValidationInterceptor(PaginatedReviewsResponseDto),
+  )
   findAll(
     @User('userId') userId: number,
     @Param('movieId', ParseIntPipe) movieId: number,
@@ -93,7 +102,15 @@ export class ReviewController {
     return this.reviewService.findAll(userId, movieId, limit, cursor);
   }
 
+  @ApiOperation({ summary: 'Get user reviews for a movie' })
+  @ApiResponse({
+    status: 200,
+    description: 'User Review retrieved successfully',
+    type: ReviewResponseDto,
+  })
+  @ApiBearerAuth()
   @Get('movies/:movieId/reviews/my')
+  @UseInterceptors(new ResponseValidationInterceptor(ReviewResponseDto))
   findMyReview(
     @Param('movieId', ParseIntPipe) movieId: number,
     @User('userId') userId: number,
