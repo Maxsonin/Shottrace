@@ -1,14 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import {
-  IsInt,
-  IsString,
-  Min,
-  Max,
-  ValidateNested,
-  IsDate,
-} from 'class-validator';
+import { IsInt, IsString, ValidateNested } from 'class-validator';
 import { CommentResponseDto } from 'src/comment/dto/comment-response.dto';
+import { IsValidRating } from 'src/common/validators/IsValidRating';
 
 class ReviewerDto {
   @ApiProperty()
@@ -38,10 +32,8 @@ export class ReviewResponseDto {
   @IsString()
   content: string;
 
-  @ApiProperty({ minimum: 1, maximum: 5 })
-  @IsInt()
-  @Min(1)
-  @Max(5)
+  @ApiProperty()
+  @IsValidRating()
   stars: number;
 
   @ApiProperty({ type: [CommentResponseDto], default: [] })
@@ -58,10 +50,10 @@ export class ReviewResponseDto {
   userVote: number = 0;
 
   @ApiProperty()
-  @IsDate()
-  createdAt: Date;
+  @IsString()
+  createdAt: string;
 
   @ApiProperty()
-  @IsDate()
-  updatedAt: Date;
+  @IsString()
+  updatedAt: string;
 }
