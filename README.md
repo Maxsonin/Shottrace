@@ -11,6 +11,7 @@
   - Python (data processing)
 - **Frontend:**
   - React
+  - Vite (build tool / dev server)
 
 ---
 
@@ -25,7 +26,7 @@
 
 #### Core Pages 
 - [ ] Movies
-- [ ] Individual Movie
+- [x] Individual Movie
 - [ ] Home
 - [ ] User
 - [ ] Lists
@@ -53,3 +54,10 @@ npm run install:all  # Install both backend and frontend dependencies
 ```bash
 npm run start:dev:all  # Starts backend, frontend, and required services in dev mode
 ```
+
+### Libraries & Tools
+- **Validation:** Zod
+- **State Management / Data Fetching:** TanStack Query
+- **UI Components:** Material UI
+- **Styling:** TailwindCSS
+- **Routing:** React Router
