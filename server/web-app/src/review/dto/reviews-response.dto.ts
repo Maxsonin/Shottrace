@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsString, ValidateNested } from 'class-validator';
+import { IsDate, IsInt, IsString, ValidateNested } from 'class-validator';
 import { CommentResponseDto } from 'src/comment/dto/comment-response.dto';
 import { IsValidRating } from 'src/common/validators/IsValidRating';
 
@@ -50,10 +50,10 @@ export class ReviewResponseDto {
   userVote: number = 0;
 
   @ApiProperty()
-  @IsString()
-  createdAt: string;
+  @IsDate()
+  createdAt: Date;
 
   @ApiProperty()
-  @IsString()
-  updatedAt: string;
+  @IsDate()
+  updatedAt: Date;
 }

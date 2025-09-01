@@ -90,7 +90,9 @@ export class ReviewController {
   @Public()
   @UseGuards(OptionalJwtAuthGuard)
   @Get('movies/:movieId/reviews')
-  //@UseInterceptors(new ResponseValidationInterceptor(PaginatedReviewsResponseDto))
+  @UseInterceptors(
+    new ResponseValidationInterceptor(PaginatedReviewsResponseDto),
+  )
   findAll(
     @User('userId') userId: number,
     @Param('movieId', ParseIntPipe) movieId: number,
@@ -108,7 +110,7 @@ export class ReviewController {
   })
   @ApiBearerAuth()
   @Get('movies/:movieId/reviews/my')
-  //@UseInterceptors(new ResponseValidationInterceptor(ReviewResponseDto))
+  @UseInterceptors(new ResponseValidationInterceptor(ReviewResponseDto))
   findMyReview(
     @Param('movieId', ParseIntPipe) movieId: number,
     @User('userId') userId: number,

@@ -1,6 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  IsDate,
+  IsInt,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 
 export class CommenterDto {
   @ApiProperty()
@@ -46,10 +52,10 @@ export class CommentResponseDto {
   userVote: number = 0;
 
   @ApiProperty()
-  @IsString()
-  createdAt: string;
+  @IsDate()
+  createdAt: Date;
 
   @ApiProperty()
-  @IsString()
-  updatedAt: string;
+  @IsDate()
+  updatedAt: Date;
 }

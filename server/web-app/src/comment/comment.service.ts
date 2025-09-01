@@ -59,6 +59,7 @@ export class CommentService {
       select: {
         id: true,
         createdAt: true,
+        updatedAt: true,
         content: true,
         reviewId: true,
         parentId: true,
