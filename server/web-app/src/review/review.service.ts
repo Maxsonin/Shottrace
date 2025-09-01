@@ -3,8 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { Review } from '@prisma/client';
-import { CommentService } from 'src/comment/comment.service';
-
+import { CommentService } from '../comment/comment.service';
 @Injectable()
 export class ReviewService {
   constructor(
@@ -41,25 +40,37 @@ export class ReviewService {
     return { id };
   }
 
-  async findAll(userId: number, movieId: number, limit = 10, cursor?: number) {
-    // Fetch limit + 2 to handle possible user review + extra
+  async getPaginatedReviews(
+    userId: number | null,
+    movieId: number,
+    limit = 10,
+    cursor?: number,
+  ) {
+    console.log('userId:', userId);
+    const whereCondition: any = { movieId };
+    if (userId) {
+      whereCondition.reviewerId = { not: userId };
+    }
+
+    // if userId is present, fetch extra to handle the exclusion
+    const fetchSize = userId ? limit + 2 : limit + 1;
+
     let reviews = await this.prisma.review.findMany({
-      where: { movieId, reviewerId: { not: userId } },
-      take: limit + 2,
+      where: whereCondition,
+      take: fetchSize,
       ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       include: {
-        reviewer: {
-          select: { id: true, username: true },
-        },
+        reviewer: { select: { id: true, username: true } },
       },
     });
 
-    const nextCursor = reviews.length > limit ? reviews[limit].id : null;
+    const hasNextPage = reviews.length > limit;
+    const paginatedReviews = hasNextPage ? reviews.slice(0, limit) : reviews;
+    const nextCursor = hasNextPage ? reviews[limit].id : null;
 
-    const paginatedReviews = reviews.slice(0, limit);
     for (const review of paginatedReviews) {
-      await this.attachCommentsAndVotesToReview(review, userId);
+      await this.attachCommentsAndVotesToReview(review, userId ?? 0);
     }
 
     return {
@@ -68,7 +79,7 @@ export class ReviewService {
     };
   }
 
-  async findMyReview(movieId: number, userId: number) {
+  async getMyReview(movieId: number, userId: number) {
     const userReview = await this.prisma.review.findFirst({
       where: {
         reviewerId: userId,

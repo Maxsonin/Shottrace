@@ -8,6 +8,6 @@ const mockModel = () => ({
 });
 
 export const createPrismaMock = () => {
-  const models = ['review', 'comment', 'user'];
+  const models = ['review', 'comment', 'user', 'vote'];
   return Object.fromEntries(models.map((m) => [m, mockModel()]));
 };

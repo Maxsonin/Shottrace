@@ -93,13 +93,18 @@ export class ReviewController {
   @UseInterceptors(
     new ResponseValidationInterceptor(PaginatedReviewsResponseDto),
   )
-  findAll(
-    @User('userId') userId: number,
+  getPaginatedReviews(
+    @User('userId') userId: number | null,
     @Param('movieId', ParseIntPipe) movieId: number,
     @Query('limit', ParseIntPipe) limit = 10,
     @Query('cursor') cursor?: number,
   ) {
-    return this.reviewService.findAll(userId, movieId, limit, cursor);
+    return this.reviewService.getPaginatedReviews(
+      userId,
+      movieId,
+      limit,
+      cursor,
+    );
   }
 
   @ApiOperation({ summary: 'Get user reviews for a movie' })
@@ -111,11 +116,11 @@ export class ReviewController {
   @ApiBearerAuth()
   @Get('movies/:movieId/reviews/my')
   @UseInterceptors(new ResponseValidationInterceptor(ReviewResponseDto))
-  findMyReview(
+  getMyReview(
     @Param('movieId', ParseIntPipe) movieId: number,
     @User('userId') userId: number,
   ) {
-    return this.reviewService.findMyReview(movieId, userId);
+    return this.reviewService.getMyReview(movieId, userId);
   }
 
   @Post('reviews/:id/vote')
