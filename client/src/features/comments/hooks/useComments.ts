@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   createComment,
   deleteComment,
@@ -10,6 +10,10 @@ import type { Comment } from '../types/comment.type';
 export default function useComments(initialComments: Comment[] = []) {
   const [comments, setComments] = useState<Comment[]>(initialComments);
   const [replying, setReplying] = useState(false);
+
+  useEffect(() => {
+    setComments(initialComments);
+  }, [initialComments]);
 
   const addOrUpdateUserComment = async (data: {
     reviewId?: number;
