@@ -21,7 +21,7 @@ export const createReview = async (data: any) => {
 
 export const updateReview = async (reviewId: string | number, data: any) => {
   return makeRequest<Review>(`/reviews/${reviewId}`, {
-    method: 'PUT',
+    method: 'PATCH',
     data,
   });
 };

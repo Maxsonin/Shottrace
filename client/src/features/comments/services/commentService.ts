@@ -33,7 +33,7 @@ export const updateComment = async (
   data: { content: string }
 ) => {
   return makeRequest<Comment>(`/comments/${commentId}`, {
-    method: 'PUT',
+    method: 'PATCH',
     data,
   });
 };

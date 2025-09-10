@@ -2,18 +2,15 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
-  Put,
-  Query,
 } from '@nestjs/common';
 import { CommentService } from './comment.service';
 import { User } from 'src/common/decorators/user.decorator';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
-import { Public } from 'src/common/decorators/public.decorator';
 
 @Controller()
 export class CommentController {
@@ -24,7 +21,7 @@ export class CommentController {
     return this.commentService.create(userId, dto);
   }
 
-  @Put('comments/:id')
+  @Patch('comments/:id')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateCommentDto) {
     return this.commentService.update(id, dto);
   }
