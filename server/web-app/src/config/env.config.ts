@@ -19,6 +19,7 @@ const envConfig = () => ({
   server: { port: parsedEnv.PORT },
   cors: { origin: parsedEnv.FRONTEND_ORIGIN },
   database: { url: parsedEnv.DATABASE_URL },
+  redis: { host: process.env.REDIS_HOST, port: process.env.REDIS_PORT },
 });
 
 export default envConfig;

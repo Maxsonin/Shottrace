@@ -2,12 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
-import { Review } from '@prisma/client';
+import { Prisma, Review } from '@prisma/client';
 import { CommentService } from '../comment/comment.service';
+import { RedisService } from '../redis/redis.service';
 @Injectable()
 export class ReviewService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly redis: RedisService,
     private readonly commentService: CommentService,
   ) {}
 
@@ -46,8 +48,14 @@ export class ReviewService {
     limit = 10,
     cursor?: number,
   ) {
-    console.log('userId:', userId);
-    const whereCondition: any = { movieId };
+    const cacheKey = userId ? null : `movie:${movieId}:reviews:${cursor ?? 0}`;
+
+    if (cacheKey) {
+      const cached = await this.redis.getJSON<typeof result>(cacheKey);
+      if (cached) return cached;
+    }
+
+    const whereCondition: Prisma.ReviewWhereInput = { movieId };
     if (userId) {
       whereCondition.reviewerId = { not: userId };
     }
@@ -73,10 +81,13 @@ export class ReviewService {
       await this.attachCommentsAndVotesToReview(review, userId ?? 0);
     }
 
-    return {
-      reviews: paginatedReviews,
-      nextCursor,
-    };
+    const result = { reviews: paginatedReviews, nextCursor };
+
+    if (cacheKey && (!cursor || cursor < 3)) {
+      await this.redis.setJSON(cacheKey, result, 60);
+    }
+
+    return result;
   }
 
   async getMyReview(movieId: number, userId: number) {

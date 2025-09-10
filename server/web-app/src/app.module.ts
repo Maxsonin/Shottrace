@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { RedisModule } from './redis/redis.module';
 import { UserModule } from './user/user.module';
 import { JwtAuthGuard } from './common/guards/jwt.guard';
 import { ConfigModule } from '@nestjs/config';
@@ -16,6 +17,7 @@ import envConfig from './config/env.config';
     }),
     AuthModule,
     PrismaModule,
+    RedisModule,
     UserModule,
     ReviewModule,
     CommentModule,

@@ -3,6 +3,7 @@ import { ReviewService } from './review.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CommentService } from '../comment/comment.service';
 import { createPrismaMock } from '../../test/unit/prisma.mock';
+import { RedisService } from '../redis/redis.service';
 
 describe('ReviewService - getPaginatedReviews', () => {
   let service: ReviewService;
@@ -22,6 +23,13 @@ describe('ReviewService - getPaginatedReviews', () => {
         {
           provide: CommentService,
           useValue: { getCommentsByReview: jest.fn().mockResolvedValue([]) },
+        },
+        {
+          provide: RedisService,
+          useValue: {
+            getJSON: jest.fn(),
+            setJSON: jest.fn(),
+          },
         },
       ],
     }).compile();
@@ -53,7 +61,6 @@ describe('ReviewService - getPaginatedReviews', () => {
     const userId = 1;
     const limit = 10;
 
-    // 11 reviews in total (none belong to user)
     const reviewsFromDb = Array.from({ length: 11 }, (_, i) => ({
       id: i + 1,
       content: `Review ${i + 1}`,
