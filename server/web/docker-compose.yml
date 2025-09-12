@@ -3,7 +3,6 @@ version: '3.8'
 services:
   db:
     image: postgres:17
-    container_name: postgres
     ports:
       - '5433:5432'
     environment:
@@ -15,7 +14,6 @@ services:
 
   redis:
     image: redis/redis-stack-server:latest
-    container_name: redis-stack
     ports:
       - '6379:6379'
     volumes:
