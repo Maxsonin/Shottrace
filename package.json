@@ -2,17 +2,22 @@
   "private": true,
   "scripts": {
     "prepare": "git config core.hooksPath .githooks",
-    "install:web-app": "cd server/web-app && npm install",
+
+    "install:web": "cd server/web && npm install",
     "install:client": "cd client && npm install",
-    "install:recommender": "cd server/recommender-api && ",
-    "install:all": "npm run install:web-app && npm run install:client && npm run install:recommender",
-    "start:dev:web-app": "cd server/web-app && npm run start:dev",
+    "install:recommender": "cd server/recommender && poetry install",
+    "install:all": "concurrently \"npm run install:web\" \"npm run install:client\" && npm run install:recommender",
+
+    "start:dev:web": "cd server/web && npm run start:dev",
     "start:dev:client": "cd client && npm run dev",
-    "start:dev:recommender": "cd server/recommender-api && ",
-    "docker:web-app:start": "docker-compose -f server/web-app/docker-compose.yml up --build -d",
-    "docker:web-app:stop": "docker-compose -f server/web-app/docker-compose.yml down",
-    "start:dev:all": "npm run docker:web-app:start && wait-port localhost:5433 && concurrently \"npm run start:dev:web-app\" \"npm run start:dev:client\" \"npm run start:dev:recommender\"",
-    "prisma:studio": "cd server/web-app && npx prisma studio"
+    "start:dev:recommender": "cd server/recommender && poetry run uvicorn app.main:app --reload",
+    "start:dev:all": "npm run docker:web:start && wait-port localhost:5433 && npm run prisma:migrate && concurrently \"npm run start:dev:web\" \"npm run start:dev:client\" \"npm run start:dev:recommender\"",
+    
+    "docker:web:start": "cd server/web && docker-compose -f docker-compose.yml up -d",
+    "docker:web:stop": "cd server/web && docker-compose -f docker-compose.yml down",
+    
+    "prisma:studio": "cd server/web && npx prisma studio",
+    "prisma:migrate": "cd server/web && npx prisma migrate dev"
   },
   "devDependencies": {
     "concurrently": "^8.2.0",
