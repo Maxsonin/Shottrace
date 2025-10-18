@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { voteReview } from '../services/reviewService';
 import type { Review } from '../types/reviews.type';
 
-type ReviewsResponse = { reviews: Review[]; nextCursor: number | null };
+type ReviewsResponse = { reviews: Review[]; totalPages: number };
 
 export default function useVoteReview(movieId: string, userId?: number) {
   const queryClient = useQueryClient();
