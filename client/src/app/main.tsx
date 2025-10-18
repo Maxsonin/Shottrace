@@ -10,11 +10,11 @@ import { queryClient } from './config/queryClient.config';
 
 createRoot(document.getElementById('root')!).render(
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <ThemeProvider theme={theme}>
+    <ThemeProvider theme={theme}>
+      <AuthProvider>
         <CssBaseline />
         <RouterProvider router={router} />
-      </ThemeProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );

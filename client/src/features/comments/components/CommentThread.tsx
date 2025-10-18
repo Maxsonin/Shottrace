@@ -33,7 +33,7 @@ export default function CommentThread({
     content: string;
   }) => void;
 }) {
-  const { user } = useAuth();
+  const { user, openSignInDialog } = useAuth();
   const [editCommentId, setEditCommentId] = useState<number | null>(null);
   const [replyCommentId, setReplyCommentId] = useState<number | null>(null);
 
@@ -117,13 +117,13 @@ export default function CommentThread({
                     votes={comment.votes}
                     userVote={comment.userVote}
                     onVote={(value) => {
-                      if (!user) return;
-
-                      onVoteComment({
-                        commentId: comment.id,
-                        userId: user?.userId,
-                        value,
-                      });
+                      if (!user) openSignInDialog();
+                      else
+                        onVoteComment({
+                          commentId: comment.id,
+                          userId: user.userId,
+                          value,
+                        });
                     }}
                   />
 
@@ -131,7 +131,10 @@ export default function CommentThread({
                     <Button
                       startIcon={<ReplyIcon />}
                       size="small"
-                      onClick={() => setReplyCommentId(comment.id)}
+                      onClick={() => {
+                        if (!user) openSignInDialog();
+                        else setReplyCommentId(comment.id);
+                      }}
                     >
                       Reply
                     </Button>

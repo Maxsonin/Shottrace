@@ -24,7 +24,7 @@ export default function ReviewElement({
   onDelete,
   onReply,
 }: Props) {
-  const { user } = useAuth();
+  const { user, openSignInDialog } = useAuth();
 
   return (
     <Paper
@@ -68,14 +68,20 @@ export default function ReviewElement({
         <Vote
           votes={review.votes}
           userVote={review.userVote}
-          onVote={(value) => onVoteReview(review.id, value, isUser)}
+          onVote={(value) => {
+            if (!user) openSignInDialog();
+            else onVoteReview(review.id, value, isUser);
+          }}
         />
 
         <Button
           color="primary"
           size="small"
           startIcon={<ReplyIcon />}
-          onClick={onReply}
+          onClick={() => {
+            if (!user) openSignInDialog();
+            else onReply;
+          }}
         >
           Reply
         </Button>
