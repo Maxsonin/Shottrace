@@ -5,6 +5,7 @@ import { UpdateReviewDto } from './dto/update-review.dto';
 import { Prisma, Review } from '@prisma/client';
 import { CommentService } from '../comment/comment.service';
 import { RedisService } from '../redis/redis.service';
+import { SortOptions } from './types/sort';
 @Injectable()
 export class ReviewService {
   constructor(
@@ -45,47 +46,42 @@ export class ReviewService {
   async getPaginatedReviews(
     userId: number | null,
     movieId: number,
-    limit = 10,
-    cursor?: number,
+    limit = 5,
+    page = 1,
+    sortBy: SortOptions = 'createdAt',
+    rating: number | null = null,
   ) {
-    const cacheKey = userId ? null : `movie:${movieId}:reviews:${cursor ?? 0}`;
-
-    if (cacheKey) {
-      const cached = await this.redis.getJSON<typeof result>(cacheKey);
-      if (cached) return cached;
-    }
-
     const whereCondition: Prisma.ReviewWhereInput = { movieId };
     if (userId) {
       whereCondition.reviewerId = { not: userId };
     }
+    if (rating) {
+      whereCondition.stars = { equals: rating };
+    }
 
-    // if userId is present, fetch extra to handle the exclusion
-    const fetchSize = userId ? limit + 2 : limit + 1;
+    const skip = (page - 1) * limit;
 
-    let reviews = await this.prisma.review.findMany({
-      where: whereCondition,
-      take: fetchSize,
-      ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
-      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-      include: {
-        reviewer: { select: { id: true, username: true } },
-      },
-    });
+    const [reviews, total] = await Promise.all([
+      this.prisma.review.findMany({
+        where: whereCondition,
+        skip,
+        take: limit,
+        orderBy: [{ [sortBy]: 'desc' }, { id: 'desc' }],
+        include: {
+          reviewer: { select: { id: true, username: true } },
+        },
+      }),
+      this.prisma.review.count({ where: whereCondition }),
+    ]);
 
-    const hasNextPage = reviews.length > limit;
-    const paginatedReviews = hasNextPage ? reviews.slice(0, limit) : reviews;
-    const nextCursor = hasNextPage ? reviews[limit].id : null;
-
-    for (const review of paginatedReviews) {
+    for (const review of reviews) {
       await this.attachCommentsAndVotesToReview(review, userId ?? 0);
     }
 
-    const result = { reviews: paginatedReviews, nextCursor };
-
-    if (cacheKey && (!cursor || cursor < 3)) {
-      await this.redis.setJSON(cacheKey, result, 60);
-    }
+    const result = {
+      reviews,
+      totalPages: Math.ceil(total / limit),
+    };
 
     return result;
   }

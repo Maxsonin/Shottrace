@@ -14,3 +14,5 @@ export type Review = {
   };
   comments: Comment[];
 };
+
+export type SortOptions = 'createdAt' | 'votes';

@@ -27,6 +27,7 @@ import {
 import { ReviewResponseDto } from './dto/reviews-response.dto';
 import { ResponseValidationInterceptor } from 'src/common/interceptors/response-validation.interceptor';
 import { PaginatedReviewsResponseDto } from './dto/paginated-reviews-response.dto';
+import { SortOptions } from './types/sort';
 
 @Controller()
 export class ReviewController {
@@ -96,14 +97,20 @@ export class ReviewController {
   getPaginatedReviews(
     @User('userId') userId: number | null,
     @Param('movieId', ParseIntPipe) movieId: number,
-    @Query('limit', ParseIntPipe) limit = 10,
-    @Query('cursor') cursor?: number,
+    @Query('limit', ParseIntPipe) limit = 5,
+    @Query('page', ParseIntPipe) page = 1,
+    @Query('sortBy') sortBy: SortOptions = 'createdAt',
+    @Query('rating') rating?: string,
   ) {
+    const ratingNumber = rating !== undefined ? parseFloat(rating) : undefined;
+
     return this.reviewService.getPaginatedReviews(
       userId,
       movieId,
       limit,
-      cursor,
+      page,
+      sortBy,
+      ratingNumber,
     );
   }
 

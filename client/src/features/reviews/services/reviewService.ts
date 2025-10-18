@@ -1,11 +1,17 @@
 import { makeRequest } from '@/shared/utils/axios';
 import type { Review } from '../types/reviews.type';
 
-export const getReviews = async (movieId: string, cursor?: number) => {
-  const cursorParam = cursor ? `&cursor=${cursor}` : '';
-  return makeRequest<{ reviews: Review[]; nextCursor: number | null }>(
-    `/movies/${movieId}/reviews?limit=10${cursorParam}`
-  );
+export const getPaginatedReviews = async (
+  movieId: string,
+  page = 1,
+  limit = 10,
+  sortBy = 'createdAt',
+  rating: number | null = null
+) => {
+  let query = `/movies/${movieId}/reviews?limit=${limit}&page=${page}&sortBy=${sortBy}`;
+  if (rating) query += `&rating=${rating}`;
+
+  return makeRequest<{ reviews: Review[]; totalPages: number }>(query);
 };
 
 export const getUserReview = async (movieId: string) => {

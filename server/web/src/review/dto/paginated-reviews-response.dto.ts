@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ReviewResponseDto } from './reviews-response.dto';
-import { IsOptional, ValidateNested } from 'class-validator';
+import { IsNumber, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class PaginatedReviewsResponseDto {
@@ -9,7 +9,7 @@ export class PaginatedReviewsResponseDto {
   @Type(() => ReviewResponseDto)
   reviews: ReviewResponseDto[];
 
-  @ApiProperty({ type: Number, nullable: true })
-  @IsOptional()
-  nextCursor: number | null;
+  @ApiProperty({ type: Number })
+  @IsNumber()
+  totalPages: number;
 }
