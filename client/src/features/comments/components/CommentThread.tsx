@@ -33,7 +33,7 @@ export default function CommentThread({
     content: string;
   }) => void;
 }) {
-  const { user } = useAuth();
+  const { user, openSignInDialog } = useAuth();
   const [editCommentId, setEditCommentId] = useState<number | null>(null);
   const [replyCommentId, setReplyCommentId] = useState<number | null>(null);
 
@@ -93,8 +93,13 @@ export default function CommentThread({
                   <Typography fontWeight="bold">
                     {isUserComment ? 'You' : comment.commenter.username}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {formatDate(comment.createdAt)}
+                  <Typography>
+                    {formatDate(comment.createdAt)}{' '}
+                    {comment.createdAt !== comment.updatedAt && (
+                      <Typography component="span" fontWeight="bold">
+                        (edited)
+                      </Typography>
+                    )}
                   </Typography>
                 </Stack>
 
@@ -111,20 +116,25 @@ export default function CommentThread({
                   <Vote
                     votes={comment.votes}
                     userVote={comment.userVote}
-                    onVote={(value) =>
-                      onVoteComment({
-                        commentId: comment.id,
-                        userId: user.userId,
-                        value,
-                      })
-                    }
+                    onVote={(value) => {
+                      if (!user) openSignInDialog();
+                      else
+                        onVoteComment({
+                          commentId: comment.id,
+                          userId: user.userId,
+                          value,
+                        });
+                    }}
                   />
 
                   <Stack direction="row" spacing={1}>
                     <Button
                       startIcon={<ReplyIcon />}
                       size="small"
-                      onClick={() => setReplyCommentId(comment.id)}
+                      onClick={() => {
+                        if (!user) openSignInDialog();
+                        else setReplyCommentId(comment.id);
+                      }}
                     >
                       Reply
                     </Button>

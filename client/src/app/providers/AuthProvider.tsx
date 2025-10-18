@@ -7,6 +7,8 @@ import {
   type ReactNode,
 } from 'react';
 import { api } from '@/shared/utils/axios';
+import SignUpDialog from '@/shared/components/auth/SignUpDialog';
+import SignInDialog from '@/shared/components/auth/SignInDialog';
 
 interface User {
   userId: number;
@@ -19,6 +21,9 @@ interface AuthContextType {
 
   signIn: (accessToken: string) => Promise<void>;
   signOut: () => Promise<void>;
+
+  openSignInDialog: () => void;
+  openSignUpDialog: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,6 +40,9 @@ interface AuthProviderProps {
 const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const [openSignIn, setOpenSignIn] = useState(false);
+  const [openSignUp, setOpenSignUp] = useState(false);
 
   const tokenRef = useRef<string | null>(null);
   const refreshInProgressRef = useRef(false);
@@ -131,9 +139,23 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
+  const openSignInModal = () => setOpenSignIn(true);
+  const openSignUpModal = () => setOpenSignUp(true);
+
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        signIn,
+        signOut,
+        openSignInDialog: openSignInModal,
+        openSignUpDialog: openSignUpModal,
+      }}
+    >
       {!loading && children}
+      {openSignIn && <SignInDialog onClose={() => setOpenSignIn(false)} />}
+      {openSignUp && <SignUpDialog onClose={() => setOpenSignUp(false)} />}
     </AuthContext.Provider>
   );
 };

@@ -1,43 +1,20 @@
 import { createRoot } from 'react-dom/client';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { RouterProvider } from 'react-router-dom';
 import AuthProvider from './providers/AuthProvider';
-import MainLayout from './layouts/MainLayout';
-import HomePage from './pages/HomePage';
-import MoviePage from './pages/MoviePage';
-import NotFoundPage from './pages/NotFoundPage';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import theme from '@/shared/themes/default';
 import './index.css';
-
-const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <MainLayout />,
-    children: [
-      { index: true, element: <HomePage /> },
-      { path: 'movie/:movieId', element: <MoviePage /> },
-    ],
-    errorElement: <NotFoundPage />,
-  },
-]);
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-    },
-  },
-});
+import { router } from './app.router';
+import { queryClient } from './config/queryClient.config';
 
 createRoot(document.getElementById('root')!).render(
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <ThemeProvider theme={theme}>
+    <ThemeProvider theme={theme}>
+      <AuthProvider>
         <CssBaseline />
         <RouterProvider router={router} />
-      </ThemeProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );

@@ -5,6 +5,7 @@ import { Box, Typography, Paper, Button, Stack, Rating } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ReplyIcon from '@mui/icons-material/Reply';
+import { formatDate } from '@/shared/utils/dataFormatter';
 
 type Props = {
   review: Review;
@@ -23,7 +24,7 @@ export default function ReviewElement({
   onDelete,
   onReply,
 }: Props) {
-  const { user } = useAuth();
+  const { user, openSignInDialog } = useAuth();
 
   return (
     <Paper
@@ -36,19 +37,29 @@ export default function ReviewElement({
         borderRadius: 5,
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Typography fontSize={20}>
-          <Box component="span" fontWeight="bold">
-            {isUser ? 'You' : review.reviewer.username}
-          </Box>{' '}
-          rated
+      <Box display={'flex'} justifyContent="space-between">
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography fontSize={20}>
+            <Box component="span" fontWeight="bold">
+              {isUser ? 'You' : review.reviewer.username}
+            </Box>{' '}
+            rated
+          </Typography>
+          <Rating
+            name="read-only-rating"
+            value={review.stars}
+            precision={0.5}
+            readOnly
+          />
+        </Box>
+        <Typography>
+          {formatDate(review.createdAt)}{' '}
+          {review.createdAt !== review.updatedAt && (
+            <Typography component="span" fontWeight="bold">
+              (edited)
+            </Typography>
+          )}
         </Typography>
-        <Rating
-          name="read-only-rating"
-          value={review.stars}
-          precision={0.5}
-          readOnly
-        />
       </Box>
 
       <Typography mt={1}>{review.content}</Typography>
@@ -57,14 +68,20 @@ export default function ReviewElement({
         <Vote
           votes={review.votes}
           userVote={review.userVote}
-          onVote={(value) => onVoteReview(review.id, value, isUser)}
+          onVote={(value) => {
+            if (!user) openSignInDialog();
+            else onVoteReview(review.id, value, isUser);
+          }}
         />
 
         <Button
           color="primary"
           size="small"
           startIcon={<ReplyIcon />}
-          onClick={onReply}
+          onClick={() => {
+            if (!user) openSignInDialog();
+            else onReply;
+          }}
         >
           Reply
         </Button>

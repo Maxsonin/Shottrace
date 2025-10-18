@@ -1,65 +1,25 @@
-import { useQuery } from '@tanstack/react-query';
-import type { MovieWithStats } from '../types/movie.type';
-import { getMovie } from '../services/movieService';
-import { useEffect, useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import type { Movie } from '../types/movie.type';
 import {
   Box,
   CardContent,
   CardMedia,
-  CircularProgress,
   Typography,
   Card,
   Tabs,
   Tab,
-  Link,
 } from '@mui/material';
-import slugify from 'slugify';
-
 import CastList from './CastList';
+import { useState } from 'react';
+import MovieHeader from './MovieHeader';
 
-type Props = {
-  movieId: string;
-  setBackgroundImage: (url: string) => void;
+type MovieDetailsProps = {
+  movie: Movie;
 };
 
-export default function MovieDetails({ movieId, setBackgroundImage }: Props) {
-  const {
-    data: movie,
-    isPending,
-    error,
-  } = useQuery<MovieWithStats>({
-    queryKey: ['movie', movieId],
-    queryFn: () => getMovie(movieId),
-    staleTime: 1000 * 60 * 60,
-  });
-
+export default function MovieDetails({ movie }: MovieDetailsProps) {
   const [tab, setTab] = useState(0);
 
-  useEffect(() => {
-    if (movie?.backdrop_path) {
-      setBackgroundImage(
-        `https://image.tmdb.org/t/p/w1280/${movie.backdrop_path}`
-      );
-    }
-  }, [movie?.backdrop_path, setBackgroundImage]);
-
-  if (error) console.error(error);
-
-  if (isPending)
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="70vh"
-      >
-        <CircularProgress />
-      </Box>
-    );
-
   if (!movie) return null;
-
   return (
     <Card
       elevation={0}
@@ -76,7 +36,7 @@ export default function MovieDetails({ movieId, setBackgroundImage }: Props) {
 
         {/* Info */}
         <Box>
-          <Header movie={movie} />
+          <MovieHeader movie={movie} />
 
           <Tabs
             value={tab}
@@ -94,52 +54,5 @@ export default function MovieDetails({ movieId, setBackgroundImage }: Props) {
         </Box>
       </CardContent>
     </Card>
-  );
-}
-
-function Header({ movie }: { movie: MovieWithStats; director?: string }) {
-  const movieYear = movie.release_date.split('-')[0];
-  const director = movie.credits.crew.find((c) => c.job === 'Director')!.name;
-
-  return (
-    <Box>
-      <Typography variant="h4" color="text.secondary" fontWeight="bold">
-        {movie.title}{' '}
-        <Link
-          component={RouterLink}
-          to={`/movies/year/${movieYear}`}
-          fontSize={20}
-          color="text.primary"
-        >
-          {movieYear}
-        </Link>
-        <>
-          <Typography
-            component="span"
-            fontSize={20}
-            ml={2}
-            color="text.primary"
-          >
-            {'Directed by '}
-          </Typography>
-          <Link
-            component={RouterLink}
-            to={`/director/${slugify(director, { lower: true })}`}
-            fontSize={20}
-            color="text.secondary"
-          >
-            {director}
-          </Link>
-        </>
-      </Typography>
-
-      {movie.tagline && (
-        <Typography color="text.secondary" sx={{ fontStyle: 'italic', pb: 2 }}>
-          {movie.tagline}
-        </Typography>
-      )}
-
-      <Typography>{movie.overview}</Typography>
-    </Box>
   );
 }

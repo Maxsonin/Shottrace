@@ -20,7 +20,7 @@ export const getMovie = async (movieId: string) => {
   return data;
 };
 
-export const getMovieStats = async (movieId: string): Promise<MovieStats> => {
+export const getMovieStats = async (_movieId: string): Promise<MovieStats> => {
   return {
     // Currently mock
     likedCount: Math.floor(Math.random() * 100),

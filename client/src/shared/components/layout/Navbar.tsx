@@ -1,19 +1,16 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/app/providers/AuthProvider';
-import SignInForm from '@/features/auth/components/SignInForm';
-import SignUpForm from '@/features/auth/components/SignUpForm';
-
-import { Dialog, DialogTitle, DialogContent, IconButton } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
 
 function Navbar() {
-  const [openSignIn, setOpenSignIn] = useState(false);
-  const [openSignUp, setOpenSignUp] = useState(false);
-
   const navItemClass = 'uppercase cursor-pointer hover:text-gray-300';
 
-  const { user, loading, signOut } = useAuth();
+  const {
+    user,
+    loading,
+    signOut,
+    openSignInDialog: openSignInModal,
+    openSignUpDialog: openSignUpModal,
+  } = useAuth();
 
   const handleSignOut = async () => {
     try {
@@ -36,16 +33,10 @@ function Navbar() {
             <ul className="flex space-x-6 font-bold">
               {!user ? (
                 <>
-                  <li
-                    className={navItemClass}
-                    onClick={() => setOpenSignIn(true)}
-                  >
+                  <li className={navItemClass} onClick={openSignInModal}>
                     Sign In
                   </li>
-                  <li
-                    className={navItemClass}
-                    onClick={() => setOpenSignUp(true)}
-                  >
+                  <li className={navItemClass} onClick={openSignUpModal}>
                     Create Account
                   </li>
                 </>
@@ -80,50 +71,6 @@ function Navbar() {
           )}
         </div>
       </nav>
-
-      {openSignIn && (
-        <Dialog open={openSignIn} onClose={() => setOpenSignIn(false)}>
-          <DialogTitle>
-            Sign In
-            <IconButton
-              aria-label="close"
-              onClick={() => setOpenSignIn(false)}
-              sx={{
-                position: 'absolute',
-                right: 8,
-                top: 8,
-              }}
-            >
-              <CloseIcon />
-            </IconButton>
-          </DialogTitle>
-          <DialogContent>
-            <SignInForm onClose={() => setOpenSignIn(false)} />
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {openSignUp && (
-        <Dialog open={openSignUp} onClose={() => setOpenSignUp(false)}>
-          <DialogTitle>
-            Create Account
-            <IconButton
-              aria-label="close"
-              onClick={() => setOpenSignUp(false)}
-              sx={{
-                position: 'absolute',
-                right: 8,
-                top: 8,
-              }}
-            >
-              <CloseIcon />
-            </IconButton>
-          </DialogTitle>
-          <DialogContent>
-            <SignUpForm onClose={() => setOpenSignUp(false)} />
-          </DialogContent>
-        </Dialog>
-      )}
     </>
   );
 }
