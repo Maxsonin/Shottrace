@@ -5,6 +5,7 @@ const mockModel = () => ({
   create: jest.fn(),
   update: jest.fn(),
   delete: jest.fn(),
+  count: jest.fn(),
 });
 
 export const createPrismaMock = () => {
