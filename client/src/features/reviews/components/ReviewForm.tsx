@@ -100,7 +100,7 @@ function ReviewForm({ onSubmit, onClose, data }: ReviewFormProps) {
           size="large"
           value={stars}
           precision={0.5}
-          onChange={(event, newValue) => setStars(newValue || 0)}
+          onChange={(_, newValue) => setStars(newValue || 0)}
         />
       </Box>
 

@@ -93,8 +93,13 @@ export default function CommentThread({
                   <Typography fontWeight="bold">
                     {isUserComment ? 'You' : comment.commenter.username}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {formatDate(comment.createdAt)}
+                  <Typography>
+                    {formatDate(comment.createdAt)}{' '}
+                    {comment.createdAt !== comment.updatedAt && (
+                      <Typography component="span" fontWeight="bold">
+                        (edited)
+                      </Typography>
+                    )}
                   </Typography>
                 </Stack>
 
@@ -111,13 +116,15 @@ export default function CommentThread({
                   <Vote
                     votes={comment.votes}
                     userVote={comment.userVote}
-                    onVote={(value) =>
+                    onVote={(value) => {
+                      if (!user) return;
+
                       onVoteComment({
                         commentId: comment.id,
-                        userId: user.userId,
+                        userId: user?.userId,
                         value,
-                      })
-                    }
+                      });
+                    }}
                   />
 
                   <Stack direction="row" spacing={1}>
