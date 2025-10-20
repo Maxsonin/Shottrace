@@ -1,18 +1,18 @@
-import type { Comment } from '@/features/comments/types/comment.type';
+import type { Comment } from "@/features/comments/types/comment.type";
 
 export type Review = {
-  id: number;
-  createdAt: string;
-  updatedAt: string;
-  content: string;
-  votes: number;
-  userVote: -1 | 1 | 0;
-  stars: number;
-  reviewer: {
-    id: number;
-    username: string;
-  };
-  comments: Comment[];
+	id: number;
+	createdAt: string;
+	updatedAt: string;
+	content: string;
+	votes: number;
+	userVote: -1 | 1 | 0;
+	stars: number;
+	reviewer: {
+		id: number;
+		username: string;
+	};
+	comments: Comment[];
 };
 
-export type SortOptions = 'createdAt' | 'votes';
+export type SortOptions = "createdAt" | "votes";

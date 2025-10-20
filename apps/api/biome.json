@@ -1,4 +1,5 @@
 {
+	"root": false,
 	"$schema": "https://biomejs.dev/schemas/2.2.6/schema.json",
 	"vcs": {
 		"enabled": false,
@@ -21,12 +22,22 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true
+			"recommended": true,
+			"suspicious": {
+				"noExplicitAny": "off"
+			},
+			"style": {
+				"noNonNullAssertion": "off",
+				"useImportType": "off"
+			}
 		}
 	},
 	"javascript": {
 		"formatter": {
 			"quoteStyle": "double"
+		},
+		"parser": {
+			"unsafeParameterDecoratorsEnabled": true
 		}
 	},
 	"assist": {
