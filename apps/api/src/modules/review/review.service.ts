@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { Prisma, Review } from "@prisma/client";
 import { CommentService } from "../comment/comment.service";
-import { PrismaService } from "../prisma/prisma.service";
+import { PrismaService } from "../../core/prisma/prisma.service";
 import { CreateReviewDto } from "./dto/create-review.dto";
 import { UpdateReviewDto } from "./dto/update-review.dto";
 import { SortOptions } from "./types/sort";

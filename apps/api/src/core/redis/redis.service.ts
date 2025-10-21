@@ -14,8 +14,10 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
 		this.client = new Redis({ host, port });
 
+		this.client.on("connect", () =>
+			console.log(`Connected to Redis at ${host}:${port}`),
+		);
 		this.client.on("error", (err) => console.error("Redis Error", err));
-		console.log(`Redis connected to ${host}:${port}`);
 	}
 
 	async onModuleDestroy() {
@@ -28,11 +30,9 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 	}
 
 	async set(key: string, value: string, ttlSeconds?: number) {
-		if (ttlSeconds) {
-			await this.client.set(key, value, "EX", ttlSeconds);
-		} else {
-			await this.client.set(key, value);
-		}
+		return ttlSeconds
+			? this.client.set(key, value, "EX", ttlSeconds)
+			: this.client.set(key, value);
 	}
 
 	async del(key: string) {
@@ -45,7 +45,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 		return cached ? JSON.parse(cached) : null;
 	}
 
-	async setJSON(key: string, value: any, ttlSeconds?: number) {
+	async setJSON<T>(key: string, value: T, ttlSeconds?: number) {
 		await this.set(key, JSON.stringify(value), ttlSeconds);
 	}
 }

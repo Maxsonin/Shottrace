@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsInt, IsNotEmpty, IsString } from "class-validator";
-import { IsValidRating } from "../../common/validators/IsValidRating";
-import { WordCount } from "../../common/validators/WordCount";
+import { IsValidRating } from "src/common/validators/IsValidRating";
+import { WordCount } from "src/common/validators/WordCount";
 
 export class CreateReviewDto {
 	@ApiProperty()

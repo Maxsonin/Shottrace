@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsDate, IsInt, IsString, ValidateNested } from "class-validator";
-import { CommentResponseDto } from "src/comment/dto/comment-response.dto";
+import { CommentResponseDto } from "src/modules/comment/dto/comment-response.dto";
 import { IsValidRating } from "src/common/validators/IsValidRating";
 
 class ReviewerDto {

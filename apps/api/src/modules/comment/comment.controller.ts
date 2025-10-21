@@ -8,9 +8,9 @@ import {
 	Post,
 } from "@nestjs/common";
 import { User } from "src/common/decorators/user.decorator";
-import { CommentService } from "./comment.service";
 import { CreateCommentDto } from "./dto/create-comment.dto";
 import { UpdateCommentDto } from "./dto/update-comment.dto";
+import { CommentService } from "./comment.service";
 
 @Controller()
 export class CommentController {
