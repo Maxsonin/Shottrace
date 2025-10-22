@@ -1,1 +1,1 @@
-export type SortOptions = "createdAt" | "votes";
+export type SortOptions = "createdAt" | "totalVotes";

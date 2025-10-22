@@ -66,7 +66,7 @@ export default function ReviewElement({
 
 			<Stack direction="row" gap={1} pt={1}>
 				<Vote
-					votes={review.votes}
+					votes={review.totalVotes}
 					userVote={review.userVote}
 					onVote={(value) => {
 						if (!user) openSignInDialog();

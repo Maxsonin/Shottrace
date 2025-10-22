@@ -1,19 +1,26 @@
 import { Injectable } from "@nestjs/common";
-import { Prisma, Review } from "@prisma/client";
-import { CommentService } from "../comment/comment.service";
+import { Prisma } from "@prisma/client";
+import { plainToInstance } from "class-transformer";
 import { PrismaService } from "../../core/prisma/prisma.service";
-import { CreateReviewDto } from "./dto/create-review.dto";
-import { UpdateReviewDto } from "./dto/update-review.dto";
-import { SortOptions } from "./types/sort";
+import { CommentService } from "../comment/comment.service";
+import { VoteService } from "../vote/vote.service";
+import { CreateReviewDto } from "./dto/request/create-review.dto";
+import { PaginatedReviewsQueryDto } from "./dto/request/paginated-reviews-query.dto";
+import { UpdateReviewDto } from "./dto/request/update-review.dto";
+import { PaginatedReviewsDto } from "./dto/response/paginated-reviews.dto";
+import { ReviewDto } from "./dto/response/review.dto";
+import { toDto } from "src/common/utils/dto.utils";
+
 @Injectable()
 export class ReviewService {
 	constructor(
 		private readonly prisma: PrismaService,
 		private readonly commentService: CommentService,
+		private readonly voteService: VoteService,
 	) {}
 
-	async create(userId: number, dto: CreateReviewDto) {
-		const review = await this.prisma.review.create({
+	async create(userId: number, dto: CreateReviewDto): Promise<ReviewDto> {
+		const createdReview = await this.prisma.review.create({
 			data: {
 				reviewerId: userId,
 				movieId: dto.movieId,
@@ -25,15 +32,21 @@ export class ReviewService {
 			},
 		});
 
-		return review;
+		return toDto(ReviewDto, {
+			...createdReview,
+			comments: [],
+			userVote: 0,
+		});
 	}
 
 	async update(id: number, data: UpdateReviewDto) {
-		return await this.prisma.review.update({
+		const updatedReview = await this.prisma.review.update({
 			where: { id },
 			data: { content: data.content, stars: data.stars },
 			select: { content: true, stars: true, updatedAt: true },
 		});
+
+		return updatedReview;
 	}
 
 	async remove(id: number) {
@@ -44,11 +57,10 @@ export class ReviewService {
 	async getPaginatedReviews(
 		userId: number | null,
 		movieId: number,
-		limit = 5,
-		page = 1,
-		sortBy: SortOptions = "createdAt",
-		rating: number | null = null,
-	) {
+		query: PaginatedReviewsQueryDto,
+	): Promise<{ reviews: ReviewDto[]; totalPages: number }> {
+		const { limit = 5, page = 1, sortBy = "createdAt", rating } = query;
+
 		const whereCondition: Prisma.ReviewWhereInput = { movieId };
 		if (userId) {
 			whereCondition.reviewerId = { not: userId };
@@ -72,19 +84,44 @@ export class ReviewService {
 			this.prisma.review.count({ where: whereCondition }),
 		]);
 
-		for (const review of reviews) {
-			await this.attachCommentsAndVotesToReview(review, userId ?? 0);
-		}
+		// Fetch user votes if user is logged in
+		const userVoteMap = userId
+			? new Map(
+					(
+						await this.prisma.vote.findMany({
+							where: { userId, reviewId: { in: reviews.map((r) => r.id) } },
+							select: { reviewId: true, value: true },
+						})
+					).map((vote) => [vote.reviewId!, vote.value]),
+				)
+			: new Map<number, number>();
 
-		const result = {
-			reviews,
+		// TEMP SOLUTION: Enrich reviews with comments & userVote
+		const enrichedReviews = await Promise.all(
+			reviews.map(async (review) => {
+				// TODO: make this more efficient by fetching comments in parallel after comment module is refactored
+				const comments = await this.commentService.getCommentsByReview(
+					review.id,
+					userId,
+				);
+				return toDto(ReviewDto, {
+					...review,
+					comments,
+					userVote: userVoteMap.get(review.id) ?? 0,
+				});
+			}),
+		);
+
+		return toDto(PaginatedReviewsDto, {
+			reviews: enrichedReviews,
 			totalPages: Math.ceil(total / limit),
-		};
-
-		return result;
+		});
 	}
 
-	async getMyReview(movieId: number, userId: number) {
+	async getMyReview(
+		movieId: number,
+		userId: number,
+	): Promise<ReviewDto | null> {
 		const userReview = await this.prisma.review.findFirst({
 			where: {
 				reviewerId: userId,
@@ -95,42 +132,19 @@ export class ReviewService {
 			},
 		});
 
-		if (userReview) {
-			await this.attachCommentsAndVotesToReview(userReview, userId);
+		if (!userReview) {
+			return null;
 		}
 
-		return userReview;
-	}
+		const [comments, userVote] = await Promise.all([
+			this.commentService.getCommentsByReview(userReview.id, userId),
+			this.voteService.getUserReviewVote(userReview.id, userId),
+		]);
 
-	async voteReview(userId: number, reviewId: number, value: 1 | -1 | 0) {
-		if (value === 0) {
-			return this.prisma.vote.deleteMany({
-				where: { userId, reviewId },
-			});
-		}
-
-		return this.prisma.vote.upsert({
-			where: { userId_reviewId: { userId, reviewId } },
-			update: { value },
-			create: { userId, reviewId, value },
+		return toDto(ReviewDto, {
+			...userReview,
+			comments,
+			userVote,
 		});
-	}
-
-	private async attachCommentsAndVotesToReview(review: Review, userId: number) {
-		review["comments"] = await this.commentService.getCommentsByReview(
-			review.id,
-			userId,
-		);
-
-		const votes = await this.prisma.vote.findMany({
-			where: { reviewId: review.id },
-		});
-		const total = votes.reduce((sum, vote) => sum + vote.value, 0);
-		const userVote = userId
-			? (votes.find((vote) => vote.userId === userId)?.value ?? 0)
-			: 0;
-
-		review["votes"] = total;
-		review["userVote"] = userVote;
 	}
 }

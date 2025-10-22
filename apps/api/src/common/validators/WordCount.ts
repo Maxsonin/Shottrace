@@ -13,12 +13,15 @@ export function WordCount(
 		registerDecorator({
 			name: "WordCount",
 			target: object.constructor,
-			propertyName: propertyName,
+			propertyName,
 			constraints: [min, max],
 			options: validationOptions,
 			validator: {
 				validate(value: any, args: ValidationArguments) {
-					if (typeof value !== "string") return false;
+					if (typeof value !== "string") return false; // ensures string
+
+					const trimmed = value.trim();
+					if (!trimmed) return false; // ensures non-empty
 
 					const wordCount = value.trim().split(/\s+/).length;
 					const [min, max] = args.constraints;

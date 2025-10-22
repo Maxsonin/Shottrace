@@ -1,13 +1,13 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
-import { CommentModule } from "./modules/comment/comment.module";
 import { JwtAuthGuard } from "./common/guards/jwt.guard";
-import envConfig from "./core/config/env.config";
+import { envConfig } from "./core/config/env.config";
 import { PrismaModule } from "./core/prisma/prisma.module";
 import { RedisModule } from "./core/redis/redis.module";
+import { AuthModule } from "./modules/auth/auth.module";
+import { CommentModule } from "./modules/comment/comment.module";
 import { ReviewModule } from "./modules/review/review.module";
 import { UserModule } from "./modules/user/user.module";
-import { AuthModule } from "./modules/auth/auth.module";
 
 @Module({
 	imports: [

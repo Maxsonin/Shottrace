@@ -1,59 +1,57 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { Type } from "class-transformer";
+import { Expose, Type } from "class-transformer";
 import { IsDate, IsInt, IsString, ValidateNested } from "class-validator";
-import { CommentResponseDto } from "src/modules/comment/dto/comment-response.dto";
 import { IsValidRating } from "src/common/validators/IsValidRating";
+import { CommentResponseDto } from "src/modules/comment/dto/comment-response.dto";
 
 class ReviewerDto {
-	@ApiProperty()
+	@Expose()
 	@IsInt()
 	id: number;
 
-	@ApiProperty()
+	@Expose()
 	@IsString()
 	username: string;
 }
 
-export class ReviewResponseDto {
-	@ApiProperty()
+export class ReviewDto {
+	@Expose()
 	@IsInt()
 	id: number;
 
-	@ApiProperty()
+	@Expose()
 	@IsInt()
 	movieId: number;
 
-	@ApiProperty({ type: ReviewerDto })
+	@Expose()
 	@ValidateNested()
 	@Type(() => ReviewerDto)
 	reviewer: ReviewerDto;
 
-	@ApiProperty()
+	@Expose()
 	@IsString()
 	content: string;
 
-	@ApiProperty()
+	@Expose()
 	@IsValidRating()
 	stars: number;
 
-	@ApiProperty({ type: [CommentResponseDto], default: [] })
 	@ValidateNested({ each: true })
 	@Type(() => CommentResponseDto)
 	comments: CommentResponseDto[] = [];
 
-	@ApiProperty({ default: 0 })
+	@Expose()
 	@IsInt()
-	votes: number = 0;
+	totalVotes: number;
 
-	@ApiProperty({ default: 0 })
+	@Expose()
 	@IsInt()
-	userVote: number = 0;
+	userVote: number;
 
-	@ApiProperty()
+	@Expose()
 	@IsDate()
 	createdAt: Date;
 
-	@ApiProperty()
+	@Expose()
 	@IsDate()
 	updatedAt: Date;
 }

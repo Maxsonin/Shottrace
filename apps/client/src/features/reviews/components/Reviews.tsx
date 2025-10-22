@@ -28,7 +28,7 @@ export default function Reviews({ movieId }: { movieId: string }) {
 
 	const [page, setPage] = useState(1);
 	const [limit, setLimit] = useState(5);
-	const [sortBy, setSortBy] = useState<"createdAt" | "votes">("createdAt");
+	const [sortBy, setSortBy] = useState<"createdAt" | "totalVotes">("createdAt");
 	const [rating, setRating] = useState<number | null>(null);
 
 	const reviewsPerPageId = useId();
@@ -166,7 +166,7 @@ export default function Reviews({ movieId }: { movieId: string }) {
 								label="Sort by"
 							>
 								<MenuItem value="createdAt">Newest</MenuItem>
-								<MenuItem value="votes">Votes</MenuItem>
+								<MenuItem value="totalVotes">Votes</MenuItem>
 							</Select>
 						</FormControl>
 

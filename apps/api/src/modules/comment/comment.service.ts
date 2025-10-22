@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { Comment } from "@prisma/client";
 import { PrismaService } from "../../core/prisma/prisma.service";
+import { CommentResponseDto } from "./dto/comment-response.dto";
 import { CreateCommentDto } from "./dto/create-comment.dto";
 import { UpdateCommentDto } from "./dto/update-comment.dto";
 
@@ -51,9 +52,9 @@ export class CommentService {
 
 	async getCommentsByReview(
 		reviewId: number,
-		userId?: number, // optional to get current user's vote
-	): Promise<CleanComment[]> {
-		const flatComments: CleanComment[] = await this.prisma.comment.findMany({
+		userId: number | null, // optional to get current user's vote
+	): Promise<CommentResponseDto[]> {
+		const flatComments = await this.prisma.comment.findMany({
 			where: { reviewId },
 			orderBy: { createdAt: "asc" },
 			select: {

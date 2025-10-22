@@ -9,120 +9,50 @@ import {
 	Post,
 	Query,
 	UseGuards,
-	UseInterceptors,
 } from "@nestjs/common";
-import {
-	ApiBearerAuth,
-	ApiBody,
-	ApiOperation,
-	ApiParam,
-	ApiResponse,
-} from "@nestjs/swagger";
 import { Public } from "src/common/decorators/public.decorator";
 import { User } from "src/common/decorators/user.decorator";
 import { OptionalJwtAuthGuard } from "src/common/guards/optional-jwt.guard";
-import { ResponseValidationInterceptor } from "src/common/interceptors/response-validation.interceptor";
-import { CreateReviewDto } from "./dto/create-review.dto";
-import { PaginatedReviewsResponseDto } from "./dto/paginated-reviews-response.dto";
-import { ReviewResponseDto } from "./dto/reviews-response.dto";
-import { UpdateReviewDto } from "./dto/update-review.dto";
+import { VoteService } from "../vote/vote.service";
+import { CreateReviewDto } from "./dto/request/create-review.dto";
+import { PaginatedReviewsQueryDto } from "./dto/request/paginated-reviews-query.dto";
+import { UpdateReviewDto } from "./dto/request/update-review.dto";
 import { ReviewService } from "./review.service";
-import { SortOptions } from "./types/sort";
 
 @Controller()
 export class ReviewController {
-	constructor(private readonly reviewService: ReviewService) {}
+	constructor(
+		private readonly reviewService: ReviewService,
+		private readonly voteService: VoteService,
+	) {}
 
-	@ApiOperation({ summary: "Create a new review" })
-	@ApiBearerAuth()
-	@ApiBody({ type: CreateReviewDto })
-	@ApiResponse({
-		status: 201,
-		description: "Review created successfully",
-		type: ReviewResponseDto,
-	})
 	@Post("reviews")
-	@UseInterceptors(new ResponseValidationInterceptor(ReviewResponseDto))
 	create(@User("userId") userId: number, @Body() dto: CreateReviewDto) {
 		return this.reviewService.create(userId, dto);
 	}
 
-	@ApiOperation({ summary: "Update a review" })
-	@ApiBearerAuth()
-	@ApiBody({ type: UpdateReviewDto })
-	@ApiResponse({
-		status: 200,
-		description: "Review updated successfully",
-		schema: {
-			example: {
-				content: "Updated review content",
-				stars: 4,
-				updatedAt: "2025-08-25T12:34:56.789Z",
-			},
-		},
-	})
 	@Patch("reviews/:id")
 	update(@Param("id", ParseIntPipe) id: number, @Body() data: UpdateReviewDto) {
 		return this.reviewService.update(id, data);
 	}
 
-	@ApiOperation({ summary: "Delete a review by ID" })
-	@ApiBearerAuth()
-	@ApiParam({
-		name: "id",
-		type: Number,
-	})
-	@ApiResponse({
-		status: 200,
-		description: "Review deleted successfully",
-		schema: { example: { id: 42 } },
-	})
 	@Delete("reviews/:id")
 	remove(@Param("id", ParseIntPipe) id: number) {
 		return this.reviewService.remove(id);
 	}
 
-	@ApiOperation({ summary: "Get paginated reviews for a movie" })
-	@ApiResponse({
-		status: 200,
-		description: "Reviews retrieved successfully",
-		type: PaginatedReviewsResponseDto,
-	})
 	@Public()
 	@UseGuards(OptionalJwtAuthGuard)
 	@Get("movies/:movieId/reviews")
-	@UseInterceptors(
-		new ResponseValidationInterceptor(PaginatedReviewsResponseDto),
-	)
 	getPaginatedReviews(
 		@User("userId") userId: number | null,
 		@Param("movieId", ParseIntPipe) movieId: number,
-		@Query("limit", ParseIntPipe) limit = 5,
-		@Query("page", ParseIntPipe) page = 1,
-		@Query("sortBy") sortBy: SortOptions = "createdAt",
-		@Query("rating") rating?: string,
+		@Query() query: PaginatedReviewsQueryDto,
 	) {
-		const ratingNumber = rating !== undefined ? parseFloat(rating) : undefined;
-
-		return this.reviewService.getPaginatedReviews(
-			userId,
-			movieId,
-			limit,
-			page,
-			sortBy,
-			ratingNumber,
-		);
+		return this.reviewService.getPaginatedReviews(userId, movieId, query);
 	}
 
-	@ApiOperation({ summary: "Get user reviews for a movie" })
-	@ApiResponse({
-		status: 200,
-		description: "User Review retrieved successfully",
-		type: ReviewResponseDto,
-	})
-	@ApiBearerAuth()
 	@Get("movies/:movieId/reviews/my")
-	@UseInterceptors(new ResponseValidationInterceptor(ReviewResponseDto))
 	getMyReview(
 		@Param("movieId", ParseIntPipe) movieId: number,
 		@User("userId") userId: number,
@@ -136,6 +66,6 @@ export class ReviewController {
 		@Body("userId", ParseIntPipe) userId: number,
 		@Body("value", ParseIntPipe) value: 1 | -1 | 0,
 	) {
-		return this.reviewService.voteReview(userId, reviewId, value);
+		return this.voteService.voteReview(userId, reviewId, value);
 	}
 }

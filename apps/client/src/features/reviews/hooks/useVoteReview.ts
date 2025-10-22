@@ -23,7 +23,7 @@ export default function useVoteReview(movieId: string, userId?: number) {
 					old
 						? {
 								...old,
-								votes: (old.votes ?? 0) - (old.userVote ?? 0) + value,
+								totalVotes: (old.totalVotes ?? 0) - (old.userVote ?? 0) + value,
 								userVote: value,
 							}
 						: old,
@@ -39,7 +39,8 @@ export default function useVoteReview(movieId: string, userId?: number) {
 									r.id === reviewId
 										? {
 												...r,
-												votes: (r.votes ?? 0) - (r.userVote ?? 0) + value,
+												totalVotes:
+													(r.totalVotes ?? 0) - (r.userVote ?? 0) + value,
 												userVote: value,
 											}
 										: r,

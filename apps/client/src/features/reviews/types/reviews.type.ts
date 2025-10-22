@@ -5,7 +5,7 @@ export type Review = {
 	createdAt: string;
 	updatedAt: string;
 	content: string;
-	votes: number;
+	totalVotes: number;
 	userVote: -1 | 1 | 0;
 	stars: number;
 	reviewer: {
@@ -15,4 +15,4 @@ export type Review = {
 	comments: Comment[];
 };
 
-export type SortOptions = "createdAt" | "votes";
+export type SortOptions = "createdAt" | "totalVotes";
