@@ -8,7 +8,7 @@ export type JwtPayload = {
 	username: string;
 };
 
-export type UserEntity = {
+export type AuthUser = {
 	userId: number;
 	username: string;
 	refreshToken: string | null;

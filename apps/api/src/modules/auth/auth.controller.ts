@@ -1,30 +1,11 @@
-import {
-	Body,
-	Controller,
-	Get,
-	HttpCode,
-	HttpStatus,
-	Post,
-	Res,
-	UnauthorizedException,
-	UseGuards,
-} from "@nestjs/common";
-import { Response } from "express";
+import { Body, Controller, Get, Post, Res, UseGuards } from "@nestjs/common";
 import { Public } from "src/common/decorators/public.decorator";
 import { User } from "src/common/decorators/user.decorator";
 import { JwtRefreshGuard } from "src/common/guards/rt.guard";
 import { AuthService } from "./auth.service";
+import { REFRESH_TOKEN_COOKIE } from "./constants/constants";
 import { SignInLocalDto, SignUpLocalDto } from "./dtos/auth.dto";
-import { UserEntity } from "./types/auth.type";
-
-const getRefreshTokenCookie = (res: Response, token: string) => {
-	res.cookie("refreshToken", token, {
-		httpOnly: true,
-		secure: true,
-		sameSite: "strict",
-		maxAge: 7 * 24 * 60 * 60 * 1000,
-	});
-};
+import { AuthUser } from "./types/auth.type";
 
 @Controller("auth")
 export class AuthController {
@@ -32,58 +13,50 @@ export class AuthController {
 
 	@Public()
 	@Post("local/signup")
-	@HttpCode(HttpStatus.CREATED)
 	async signUpLocal(
 		@Body() dto: SignUpLocalDto,
 		@Res({ passthrough: true }) res,
-	): Promise<{ accessToken: string }> {
+	): Promise<{ success: true; accessToken: string }> {
 		const tokens = await this.authService.signUpLocal(dto);
-		getRefreshTokenCookie(res, tokens.refreshToken);
-		return { accessToken: tokens.accessToken };
+		this.authService.getRefreshTokenCookie(res, tokens.refreshToken);
+		return { success: true, accessToken: tokens.accessToken };
 	}
 
 	@Public()
 	@Post("local/signin")
-	@HttpCode(HttpStatus.OK)
 	async signinLocal(
 		@Body() dto: SignInLocalDto,
 		@Res({ passthrough: true }) res,
-	): Promise<{ accessToken: string }> {
+	): Promise<{ success: true; accessToken: string }> {
 		const tokens = await this.authService.signinLocal(dto);
-		getRefreshTokenCookie(res, tokens.refreshToken);
-		return { accessToken: tokens.accessToken };
+		this.authService.getRefreshTokenCookie(res, tokens.refreshToken);
+		return { success: true, accessToken: tokens.accessToken };
 	}
 
 	@Post("logout")
-	@HttpCode(HttpStatus.OK)
-	logoutLocal(@User() user: UserEntity, @Res({ passthrough: true }) res) {
-		this.authService.logoutLocal(user.userId);
-		res.clearCookie("refreshToken");
-		return { message: "Logged out" };
+	async logoutLocal(@User() user: AuthUser, @Res({ passthrough: true }) res) {
+		await this.authService.logoutLocal(user.userId);
+		res.clearCookie(REFRESH_TOKEN_COOKIE);
+		return { success: true, message: "Logged out successfully" };
 	}
 
 	@Public()
 	@UseGuards(JwtRefreshGuard)
 	@Get("refresh")
-	@HttpCode(HttpStatus.OK)
 	async refreshTokens(
-		@User() user: UserEntity,
+		@User() user: AuthUser,
 		@Res({ passthrough: true }) res,
-	): Promise<{ accessToken: string }> {
-		if (!user.refreshToken) {
-			throw new UnauthorizedException("Invalid credentials");
-		}
+	): Promise<{ success: true; accessToken: string }> {
 		const tokens = await this.authService.refreshTokens(
 			user.userId,
-			user.refreshToken,
+			user.refreshToken!,
 		);
-		getRefreshTokenCookie(res, tokens.refreshToken);
-		return { accessToken: tokens.accessToken };
+		this.authService.getRefreshTokenCookie(res, tokens.refreshToken);
+		return { success: true, accessToken: tokens.accessToken };
 	}
 
 	@Get("me")
-	@HttpCode(HttpStatus.OK)
-	getMe(@User() user: UserEntity) {
+	me(@User() user: AuthUser) {
 		return user;
 	}
 }
