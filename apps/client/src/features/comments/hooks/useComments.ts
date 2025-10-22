@@ -55,7 +55,7 @@ export default function useComments(initialComments: Comment[] = []) {
 				c.id === data.commentId
 					? {
 							...c,
-							votes: c.votes - c.userVote + data.value,
+							totalVotes: c.totalVotes - c.userVote + data.value,
 							userVote: data.value,
 						}
 					: c,

@@ -4,7 +4,27 @@ import type { Review } from "../types/reviews.type";
 
 type ReviewsResponse = { reviews: Review[]; totalPages: number };
 
-export default function useVoteReview(movieId: string, userId?: number) {
+type Query = {
+	limit?: number;
+	page?: number;
+	sortBy?: "createdAt" | "totalVotes";
+	rating?: number | null;
+};
+
+const defaultQuery: Query = {
+	limit: 5,
+	page: 1,
+	sortBy: "createdAt",
+	rating: null,
+};
+
+export default function useVoteReview(
+	movieId: string,
+	userId?: number,
+	query: Query = defaultQuery,
+) {
+	const { limit, page, sortBy, rating } = query;
+
 	const queryClient = useQueryClient();
 
 	const voteHandler = async (
@@ -30,7 +50,7 @@ export default function useVoteReview(movieId: string, userId?: number) {
 			);
 		} else {
 			queryClient.setQueryData<ReviewsResponse>(
-				["reviews", movieId, userId],
+				["reviews", movieId, userId, page, limit, sortBy, rating],
 				(old) =>
 					old
 						? {

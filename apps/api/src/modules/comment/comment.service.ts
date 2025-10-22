@@ -1,28 +1,22 @@
 import { Injectable } from "@nestjs/common";
 import { Comment } from "@prisma/client";
+import { toDto } from "src/common/utils/dto.utils";
 import { PrismaService } from "../../core/prisma/prisma.service";
-import { CommentResponseDto } from "./dto/comment-response.dto";
-import { CreateCommentDto } from "./dto/create-comment.dto";
-import { UpdateCommentDto } from "./dto/update-comment.dto";
-
-export type CleanComment = {
-	id: number;
-	createdAt: Date;
-	reviewId: number;
-	content: string;
-	parentId: number | null;
-	commenter: {
-		id: number;
-		username: string;
-	};
-};
+import { SortOptions } from "../review/types/sort";
+import { VoteService } from "../vote/vote.service";
+import { CreateCommentDto } from "./dto/request/create-comment.dto";
+import { UpdateCommentDto } from "./dto/request/update-comment.dto";
+import { CommentDto } from "./dto/response/comment.dto";
 
 @Injectable()
 export class CommentService {
-	constructor(private readonly prisma: PrismaService) {}
+	constructor(
+		private readonly prisma: PrismaService,
+		private readonly voteService: VoteService,
+	) {}
 
-	async create(userId: number, dto: CreateCommentDto) {
-		const comment = await this.prisma.comment.create({
+	async create(userId: number, dto: CreateCommentDto): Promise<CommentDto> {
+		const newComment = await this.prisma.comment.create({
 			data: {
 				content: dto.content,
 				commenterId: userId,
@@ -34,98 +28,89 @@ export class CommentService {
 			},
 		});
 
-		const withVotes = await this.attachVotesToComment(comment, userId);
-
-		return withVotes;
-	}
-
-	update(id: number, dto: UpdateCommentDto) {
-		return this.prisma.comment.update({
-			where: { id },
-			data: { content: dto.content },
+		return toDto(CommentDto, {
+			...newComment,
+			userVote: 0,
 		});
 	}
 
-	remove(id: number) {
-		return this.prisma.comment.delete({ where: { id } });
+	async update(id: number, dto: UpdateCommentDto) {
+		const updatedComment = await this.prisma.comment.update({
+			where: { id },
+			data: { content: dto.content },
+			select: { id: true, content: true, updatedAt: true },
+		});
+
+		return updatedComment;
 	}
 
-	async getCommentsByReview(
-		reviewId: number,
-		userId: number | null, // optional to get current user's vote
-	): Promise<CommentResponseDto[]> {
+	async remove(id: number) {
+		await this.prisma.comment.delete({ where: { id } });
+		return { id };
+	}
+
+	// TODO: add pagination with "Load More" button
+	async getCommentsForReviews(
+		reviewIds: number[],
+		userId: number | null,
+		sortBy: SortOptions,
+	): Promise<Map<number, CommentDto[]>> {
 		const flatComments = await this.prisma.comment.findMany({
-			where: { reviewId },
-			orderBy: { createdAt: "asc" },
-			select: {
-				id: true,
-				createdAt: true,
-				updatedAt: true,
-				content: true,
-				reviewId: true,
-				parentId: true,
+			where: { reviewId: { in: reviewIds } },
+			orderBy: [{ [sortBy]: "desc" }, { createdAt: "desc" }],
+			include: {
 				commenter: {
 					select: { id: true, username: true },
 				},
 			},
 		});
 
-		const commentIds = flatComments.map((c) => c.id);
-		const votes = await this.prisma.vote.findMany({
-			where: { commentId: { in: commentIds } },
-		});
-
-		const votesMap = commentIds.reduce<
-			Record<number, { votes: number; userVote: number }>
-		>((acc, id) => {
-			const commentVotes = votes.filter((v) => v.commentId === id);
-			const total = commentVotes.reduce((sum, v) => sum + v.value, 0);
-			const userVote = userId
-				? (commentVotes.find((v) => v.userId === userId)?.value ?? 0)
-				: 0;
-			acc[id] = { votes: total, userVote };
-			return acc;
-		}, {});
-
-		const flatCommentsWithVotes = flatComments.map((c) => ({
-			...c,
-			votes: votesMap[c.id].votes,
-			userVote: votesMap[c.id].userVote,
-		}));
-
-		flatCommentsWithVotes.sort((a, b) => b.votes - a.votes);
-
-		return flatCommentsWithVotes;
-	}
-
-	async voteComment(userId: number, commentId: number, value: 1 | -1 | 0) {
-		if (value === 0) {
-			return this.prisma.vote.deleteMany({
-				where: { userId, commentId },
-			});
+		if (!flatComments.length) {
+			return new Map<number, CommentDto[]>();
 		}
 
-		return this.prisma.vote.upsert({
-			where: { userId_commentId: { userId, commentId } },
-			update: { value },
-			create: { userId, commentId, value },
-		});
+		const enrichedComments = await this.enrichCommentsWithUserVotes(
+			flatComments,
+			userId,
+		);
+
+		const groupedComments = new Map<number, CommentDto[]>();
+		for (const comment of enrichedComments) {
+			if (!groupedComments.has(comment.reviewId)) {
+				groupedComments.set(comment.reviewId, []);
+			}
+			groupedComments.get(comment.reviewId)!.push(comment);
+		}
+
+		return groupedComments;
 	}
 
-	private async attachVotesToComment(comment: Comment, userId: number) {
-		const votes = await this.prisma.vote.findMany({
-			where: { commentId: comment.id },
-		});
+	async getCommentsForReview(
+		reviewId: number,
+		userId: number | null,
+		sortBy: SortOptions,
+	): Promise<CommentDto[]> {
+		const map = await this.getCommentsForReviews([reviewId], userId, sortBy);
+		return map.get(reviewId) ?? [];
+	}
 
-		const total = votes.reduce((sum, v) => sum + v.value, 0);
-		const userVote = userId
-			? (votes.find((v) => v.userId === userId)?.value ?? 0)
-			: 0;
+	private async enrichCommentsWithUserVotes(
+		comments: Comment[],
+		userId: number | null,
+	): Promise<CommentDto[]> {
+		const userVotesMap = userId
+			? await this.voteService.getUserVotesForComments(
+					comments.map((comment) => comment.id),
+					userId,
+				)
+			: new Map<number, number>();
 
-		return {
-			...comment,
-			votes: total,
-			userVote,
-		};
+		return comments.map((comment) =>
+			toDto(CommentDto, {
+				...comment,
+				userVote: userVotesMap.get(comment.id) ?? 0,
+				hasMore: false, // TODO: implement pagination
+			}),
+		);
 	}
 }

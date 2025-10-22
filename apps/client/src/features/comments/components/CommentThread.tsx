@@ -41,7 +41,7 @@ export default function CommentThread({
 		<>
 			{comments.map((comment) => {
 				const isUserComment = user?.userId === comment.commenter.id;
-				const bgColor = getBgColor(comment.votes);
+				const bgColor = getBgColor(comment.totalVotes);
 
 				const isEditing = editCommentId === comment.id;
 				const isReplying = replyCommentId === comment.id;
@@ -114,7 +114,7 @@ export default function CommentThread({
 									sx={{ mt: 2 }}
 								>
 									<Vote
-										votes={comment.votes}
+										votes={comment.totalVotes}
 										userVote={comment.userVote}
 										onVote={(value) => {
 											if (!user) openSignInDialog();

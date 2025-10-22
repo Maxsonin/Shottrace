@@ -3,7 +3,7 @@ export type Comment = {
 	createdAt: string;
 	updatedAt: string;
 	content: string;
-	votes: number;
+	totalVotes: number;
 	userVote: -1 | 1 | 0;
 	reviewId: number;
 	parentId: number | null;

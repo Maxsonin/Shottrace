@@ -80,7 +80,7 @@ export default function ReviewElement({
 					startIcon={<ReplyIcon />}
 					onClick={() => {
 						if (!user) openSignInDialog();
-						else onReply;
+						else onReply?.();
 					}}
 				>
 					Reply

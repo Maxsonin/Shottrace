@@ -1,7 +1,7 @@
 import { Expose, Type } from "class-transformer";
 import { IsDate, IsInt, IsString, ValidateNested } from "class-validator";
 import { IsValidRating } from "src/common/validators/IsValidRating";
-import { CommentResponseDto } from "src/modules/comment/dto/comment-response.dto";
+import { CommentDto } from "src/modules/comment/dto/response/comment.dto";
 
 class ReviewerDto {
 	@Expose()
@@ -35,9 +35,10 @@ export class ReviewDto {
 	@IsValidRating()
 	stars: number;
 
+	@Expose()
 	@ValidateNested({ each: true })
-	@Type(() => CommentResponseDto)
-	comments: CommentResponseDto[] = [];
+	@Type(() => CommentDto)
+	comments: CommentDto[] = [];
 
 	@Expose()
 	@IsInt()

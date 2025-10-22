@@ -8,13 +8,17 @@ import {
 	Post,
 } from "@nestjs/common";
 import { User } from "src/common/decorators/user.decorator";
+import { VoteService } from "../vote/vote.service";
 import { CommentService } from "./comment.service";
-import { CreateCommentDto } from "./dto/create-comment.dto";
-import { UpdateCommentDto } from "./dto/update-comment.dto";
+import { CreateCommentDto } from "./dto/request/create-comment.dto";
+import { UpdateCommentDto } from "./dto/request/update-comment.dto";
 
 @Controller()
 export class CommentController {
-	constructor(private readonly commentService: CommentService) {}
+	constructor(
+		private readonly commentService: CommentService,
+		private readonly voteService: VoteService,
+	) {}
 
 	@Post("comments")
 	create(@User("userId") userId: number, @Body() dto: CreateCommentDto) {
@@ -37,6 +41,6 @@ export class CommentController {
 		@Body("userId", ParseIntPipe) userId: number,
 		@Body("value", ParseIntPipe) value: 1 | -1 | 0,
 	) {
-		return this.commentService.voteComment(userId, commentId, value);
+		return this.voteService.voteComment(userId, commentId, value);
 	}
 }

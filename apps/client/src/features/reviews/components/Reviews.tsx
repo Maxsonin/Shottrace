@@ -46,7 +46,12 @@ export default function Reviews({ movieId }: { movieId: string }) {
 		rating,
 	);
 
-	const { voteHandler } = useVoteReview(movieId, userId);
+	const { voteHandler } = useVoteReview(movieId, userId, {
+		limit,
+		page,
+		sortBy,
+		rating,
+	});
 
 	if (reviewsLoading)
 		return (

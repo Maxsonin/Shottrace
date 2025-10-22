@@ -56,8 +56,9 @@ export class ReviewController {
 	getMyReview(
 		@Param("movieId", ParseIntPipe) movieId: number,
 		@User("userId") userId: number,
+		@Query() query: PaginatedReviewsQueryDto,
 	) {
-		return this.reviewService.getMyReview(movieId, userId);
+		return this.reviewService.getMyReview(movieId, userId, query);
 	}
 
 	@Post("reviews/:id/vote")

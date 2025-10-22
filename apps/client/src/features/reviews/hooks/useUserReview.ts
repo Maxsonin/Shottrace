@@ -28,7 +28,7 @@ export function useUserReview(movieId: string, userId?: number) {
 		let response: Review;
 
 		if (data.reviewId) {
-			response = await updateReview(data.reviewId, { ...data, votes: 0 });
+			response = await updateReview(data.reviewId, data);
 		} else {
 			response = await createReview({ ...data, movieId });
 		}

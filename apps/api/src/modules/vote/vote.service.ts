@@ -58,6 +58,89 @@ export class VoteService {
 		]);
 	}
 
+	async voteComment(userId: number, commentId: number, value: 1 | -1 | 0) {
+		const existingVote = await this.prisma.vote.findUnique({
+			where: { userId_commentId: { userId, commentId } },
+		});
+
+		if (!existingVote) {
+			// New vote
+			await this.prisma.$transaction([
+				this.prisma.vote.create({ data: { userId, commentId, value } }),
+				this.prisma.comment.update({
+					where: { id: commentId },
+					data: { totalVotes: { increment: value } },
+				}),
+			]);
+			return;
+		}
+
+		if (value === 0) {
+			// User nor upvote nor downvote. Remove existing vote
+			const change = this.calculateChangeInTotalVotes(
+				existingVote.value,
+				value,
+			);
+
+			await this.prisma.$transaction([
+				this.prisma.vote.delete({ where: { id: existingVote.id } }),
+				this.prisma.comment.update({
+					where: { id: commentId },
+					data: { totalVotes: { increment: change } },
+				}),
+			]);
+
+			return;
+		}
+
+		if (existingVote.value === value)
+			// No change
+			return;
+
+		// Change existing vote
+		const change = this.calculateChangeInTotalVotes(existingVote.value, value);
+		await this.prisma.$transaction([
+			this.prisma.vote.update({
+				where: { id: existingVote.id },
+				data: { value },
+			}),
+			this.prisma.comment.update({
+				where: { id: commentId },
+				data: { totalVotes: { increment: change } },
+			}),
+		]);
+	}
+
+	async getUserVotesForReviews(
+		reviewIds: number[],
+		userId: number | null,
+	): Promise<Map<number, number>> {
+		return userId
+			? new Map(
+					(
+						await this.prisma.vote.findMany({
+							where: { userId, reviewId: { in: reviewIds } },
+							select: { reviewId: true, value: true },
+						})
+					).map((vote) => [vote.reviewId!, vote.value]),
+				)
+			: new Map<number, number>();
+	}
+
+	async getUserVotesForComments(
+		commentIds: number[],
+		userId: number,
+	): Promise<Map<number, number>> {
+		return new Map(
+			(
+				await this.prisma.vote.findMany({
+					where: { userId, commentId: { in: commentIds } },
+					select: { commentId: true, value: true },
+				})
+			).map((vote) => [vote.commentId!, vote.value]),
+		);
+	}
+
 	async getUserReviewVote(reviewId: number, userId: number) {
 		const vote = await this.prisma.vote.findUnique({
 			where: { userId_reviewId: { userId, reviewId } },
