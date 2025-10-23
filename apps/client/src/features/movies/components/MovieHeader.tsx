@@ -3,47 +3,62 @@ import { Link as RouterLink } from "react-router-dom";
 import slugify from "slugify";
 import type { Movie } from "../types/movie.type";
 
-export default function MovieHeader({
-	movie,
-}: {
+type MovieHeaderProps = {
 	movie: Movie;
-	director?: string;
-}) {
-	const movieYear = movie.release_date.split("-")[0];
-	const director = movie.credits.crew.find((c) => c.job === "Director")!.name;
+};
+
+export default function MovieHeader({ movie }: MovieHeaderProps) {
+	const { title, release_date, credits, tagline, overview } = movie;
+
+	const movieYear = release_date.split("-")[0];
+	const director = credits.crew.find((c) => c.job === "Director")!.name;
 
 	return (
 		<Box>
-			<Typography variant="h4" color="text.secondary" fontWeight="bold">
-				{movie.title}{" "}
+			<Box display="flex" alignItems="baseline" flexWrap="wrap">
+				<Typography
+					variant="h4"
+					color="text.secondary"
+					fontWeight="bold"
+					mr={1}
+				>
+					{title}
+				</Typography>
+
 				<Link
 					component={RouterLink}
 					to={`/movies/year/${movieYear}`}
-					fontSize={20}
+					fontSize={25}
 					color="text.primary"
+					mr={2}
 				>
 					{movieYear}
 				</Link>
-				<Typography component="span" fontSize={20} ml={2} color="text.primary">
-					{"Directed by "}
+
+				<Typography fontSize={20} component="span" color="text.primary" mr={1}>
+					Directed by
 				</Typography>
+
 				<Link
 					component={RouterLink}
-					to={`/director/${slugify(director, { lower: true })}`}
-					fontSize={20}
+					to={`/director/${slugify(director, { lower: true, strict: true })}`}
 					color="text.secondary"
+					fontSize={23}
 				>
 					{director}
 				</Link>
-			</Typography>
+			</Box>
 
-			{movie.tagline && (
-				<Typography color="text.secondary" sx={{ fontStyle: "italic", pb: 2 }}>
-					{movie.tagline}
+			{tagline && (
+				<Typography
+					color="text.secondary"
+					sx={{ fontStyle: "italic", pb: 2, pt: 1 }}
+				>
+					{tagline}
 				</Typography>
 			)}
 
-			<Typography>{movie.overview}</Typography>
+			<Typography>{overview}</Typography>
 		</Box>
 	);
 }

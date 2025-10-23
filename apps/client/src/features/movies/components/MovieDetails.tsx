@@ -17,20 +17,30 @@ type MovieDetailsProps = {
 };
 
 export default function MovieDetails({ movie }: MovieDetailsProps) {
+	const { title, poster_path, credits } = movie;
+
 	const [tab, setTab] = useState(0);
 
-	if (!movie) return null;
 	return (
 		<Card
 			elevation={0}
 			sx={{ borderRadius: 2, backgroundColor: "transparent" }}
 		>
-			<CardContent sx={{ display: "flex", gap: 3 }}>
+			<CardContent
+				sx={{
+					display: "flex",
+					flexDirection: { xs: "column", sm: "row" },
+					gap: 3,
+					maxWidth: { xs: "100%", sm: 1000 },
+					margin: "0 auto",
+				}}
+			>
 				{/* Poster */}
 				<CardMedia
 					component="img"
-					image={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-					alt={movie.title}
+					image={`https://image.tmdb.org/t/p/w500${poster_path}`}
+					alt={title}
+					loading="lazy"
 					sx={{ width: 250, height: 375, borderRadius: 2 }}
 				/>
 
@@ -40,15 +50,15 @@ export default function MovieDetails({ movie }: MovieDetailsProps) {
 
 					<Tabs
 						value={tab}
-						onChange={(_, v) => setTab(v)}
-						sx={{ mt: 2, mb: 2, borderBottom: "1px solid" }}
+						onChange={(_event, newTabIndex) => setTab(newTabIndex)}
+						sx={{ mt: 2, mb: 2, borderBottom: 1 }}
 					>
 						<Tab label="Cast" />
 						<Tab label="Crew" />
 						<Tab label="Details" />
 					</Tabs>
 
-					{tab === 0 && <CastList cast={movie.credits.cast} />}
+					{tab === 0 && <CastList cast={credits.cast} />}
 					{tab === 1 && <Typography>Crew</Typography>}
 					{tab === 2 && <Typography>Details</Typography>}
 				</Box>

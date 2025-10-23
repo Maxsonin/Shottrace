@@ -7,17 +7,16 @@ import Footer from "@/shared/components/layout/Footer";
 import Navbar from "@/shared/components/layout/Navbar";
 
 export type OutletContextType = {
-	setBackgroundImage: (img: string) => void;
+	setBackgroundImage: (img: string | undefined) => void;
 };
 
-const MainLayout = () => {
+export default function MainLayout() {
 	const [backgroundImage, setBackgroundImage] = useState<string | undefined>(
 		undefined,
 	);
 
 	return (
 		<Box
-			className="relative"
 			sx={{
 				display: "flex",
 				flexDirection: "column",
@@ -32,7 +31,6 @@ const MainLayout = () => {
 			)}
 
 			<Container
-				maxWidth={false}
 				sx={{
 					position: "relative",
 					maxWidth: "950px",
@@ -44,7 +42,10 @@ const MainLayout = () => {
 				<Navbar />
 				<Box
 					component="main"
-					sx={{ flex: 1, mt: backgroundImage ? "400px" : 0 }}
+					sx={{
+						flex: 1,
+						mt: backgroundImage ? { xs: "100px", sm: "400px" } : "50px",
+					}}
 				>
 					<Outlet context={{ setBackgroundImage } as OutletContextType} />
 				</Box>
@@ -52,6 +53,4 @@ const MainLayout = () => {
 			<Footer />
 		</Box>
 	);
-};
-
-export default MainLayout;
+}

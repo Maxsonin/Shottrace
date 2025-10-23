@@ -14,10 +14,3 @@ export type Movie = {
 		crew: { job: string; name: string }[];
 	};
 };
-
-export type MovieStats = {
-	likedCount: number;
-	watchedCount: number;
-};
-
-export type MovieWithStats = Movie & MovieStats;
