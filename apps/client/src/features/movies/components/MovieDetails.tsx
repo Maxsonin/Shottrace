@@ -10,7 +10,7 @@ import {
 import { useState } from "react";
 import type { Movie } from "../types/movie.type";
 import CastList from "./CastList";
-import MovieHeader from "./MovieHeader";
+import MovieDetailsHeader from "./MovieDetailsHeader";
 
 type MovieDetailsProps = {
 	movie: Movie;
@@ -46,7 +46,7 @@ export default function MovieDetails({ movie }: MovieDetailsProps) {
 
 				{/* Info */}
 				<Box>
-					<MovieHeader movie={movie} />
+					<MovieDetailsHeader movie={movie} />
 
 					<Tabs
 						value={tab}

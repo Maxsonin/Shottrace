@@ -29,7 +29,6 @@ export default function ReviewElement({
 	return (
 		<Paper
 			sx={{
-				mt: 2,
 				py: 2,
 				px: 4,
 				border: isUser ? "4px solid" : "2px olid",

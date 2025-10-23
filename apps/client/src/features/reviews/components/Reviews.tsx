@@ -15,9 +15,14 @@ import { useAuth } from "@/app/providers/AuthProvider";
 import { useReviews } from "../hooks/useReviews";
 import { useUserReview } from "../hooks/useUserReview";
 import useVoteReview from "../hooks/useVoteReview";
-import type { SortOptions } from "../types/reviews.type";
+import type {
+	FilterOptions,
+	ReviewsPerPageOptions,
+	SortOptions,
+} from "../types/reviews.type";
 import ReviewForm from "./ReviewForm";
 import ReviewWithComments from "./ReviewWithComments";
+import ReviewsFilterOptions from "./ReviewsFilterOptions";
 
 export default function Reviews({ movieId }: { movieId: string }) {
 	const { user } = useAuth();
@@ -27,35 +32,38 @@ export default function Reviews({ movieId }: { movieId: string }) {
 	const [editMode, setEditMode] = useState(false);
 
 	const [page, setPage] = useState(1);
-	const [limit, setLimit] = useState(5);
-	const [sortBy, setSortBy] = useState<"createdAt" | "totalVotes">("createdAt");
-	const [rating, setRating] = useState<number | null>(null);
-
-	const reviewsPerPageId = useId();
-	const sortById = useId();
 
 	const { userReview, addOrUpdateUserReview, deleteUserReviewHandler } =
 		useUserReview(movieId, userId);
 
-	const { reviews, totalPages, reviewsLoading, reviewsError } = useReviews(
+	const [filters, setFilters] = useState<FilterOptions>({
+		limit: 5 as ReviewsPerPageOptions,
+		sortBy: "createdAt" as SortOptions,
+		rating: null as number | null,
+	});
+
+	const updateFilter = <K extends keyof FilterOptions>(
+		key: K,
+		value: FilterOptions[K],
+	) => {
+		setFilters((prev) => ({ ...prev, [key]: value }));
+		setPage(1);
+	};
+
+	const { reviews, totalPages, reviewsLoading } = useReviews(
 		movieId,
 		userId,
-		limit,
+		filters.limit,
 		page,
-		sortBy,
-		rating,
+		filters.sortBy,
+		filters.rating,
 	);
 
-	const { voteHandler } = useVoteReview(movieId, userId, {
-		limit,
-		page,
-		sortBy,
-		rating,
-	});
+	const { voteHandler } = useVoteReview(movieId, userId, filters);
 
 	if (reviewsLoading)
 		return (
-			<Box display="flex" justifyContent="center" alignItems="center" p={2}>
+			<Box display="flex" justifyContent="center" alignItems="center" p={4}>
 				<CircularProgress />
 				<Typography variant="body1" ml={2}>
 					Loading reviews...
@@ -63,175 +71,146 @@ export default function Reviews({ movieId }: { movieId: string }) {
 			</Box>
 		);
 
-	if (reviewsError) console.error(reviewsError);
+	const hasReviews = reviews.length > 0;
+	const isEmpty = !hasReviews && !userReview;
+	const onlyUserReview = !hasReviews && !!userReview;
+
+	const isWritingOrEditing = writeMode || editMode;
+	const hasUserReview = !!userReview;
 
 	return (
-		<Box mt={4}>
-			{user &&
-				(writeMode || editMode ? (
-					<ReviewForm
-						onSubmit={(data) => {
-							addOrUpdateUserReview(data);
-							setWriteMode(false);
-							setEditMode(false);
-						}}
-						onClose={() => {
-							setWriteMode(false);
-							setEditMode(false);
-						}}
-						data={{
-							movieId,
-							initialContent: userReview?.content,
-							initialStars: userReview?.stars,
-							reviewId: userReview?.id,
-						}}
-					/>
-				) : userReview ? (
-					<Box mb={4}>
-						<Typography
-							ml={2}
-							component="h5"
-							fontSize={24}
-							fontWeight="bold"
-							mb={2}
-						>
-							Your review
-						</Typography>
-						<ReviewWithComments
-							review={userReview}
-							isUser
-							onChange={() => setEditMode(true)}
-							onVoteReview={voteHandler}
-							onDelete={deleteUserReviewHandler}
-						/>
-					</Box>
-				) : (
-					<Button
-						variant="contained"
-						color="success"
-						onClick={() => setWriteMode(true)}
-						sx={{ margin: "auto", display: "block", my: 2 }}
-					>
-						Write a review
-					</Button>
-				))}
-
-			<Box mt={1} display="flex" flexDirection="column">
-				<Box
-					display="flex"
-					justifyContent="space-between"
-					mr={2}
-					alignItems="center"
-				>
-					<Typography
-						ml={2}
-						component="h5"
-						fontSize={24}
-						fontWeight="bold"
-						sx={{ mb: 0 }}
-					>
-						Reviews
-					</Typography>
-
-					<Box display="flex" gap={2} alignItems="center">
-						<Typography variant="h6" sx={{ mb: 0 }}>
-							Filtering:
-						</Typography>
-
-						<FormControl size="small">
-							<InputLabel id={reviewsPerPageId}>Per page</InputLabel>
-							<Select
-								sx={{ width: "100px" }}
-								labelId={reviewsPerPageId}
-								value={limit}
-								onChange={(e) => {
-									setLimit(Number(e.target.value));
-									setPage(1);
-								}}
-								label="Per page"
-							>
-								{[5, 10, 25].map((n) => (
-									<MenuItem key={n} value={n}>
-										{n}
-									</MenuItem>
-								))}
-							</Select>
-						</FormControl>
-
-						<FormControl size="small">
-							<InputLabel id={sortById}>Sort by</InputLabel>
-							<Select
-								sx={{ width: "100px" }}
-								labelId={sortById}
-								value={sortBy}
-								onChange={(e) => {
-									setSortBy(e.target.value as SortOptions);
-									setPage(1);
-								}}
-								label="Sort by"
-							>
-								<MenuItem value="createdAt">Newest</MenuItem>
-								<MenuItem value="totalVotes">Votes</MenuItem>
-							</Select>
-						</FormControl>
-
-						<Typography fontWeight={"bold"} fontSize={"1.2rem"} sx={{ mb: 0 }}>
-							Stars
-						</Typography>
-						<Rating
-							size="large"
-							value={rating}
-							precision={0.5}
-							onChange={(_, newValue) => {
-								setRating(newValue || null);
-								console.log(newValue);
-								setPage(1);
+		<Box p={2}>
+			{user && (
+				<>
+					{isWritingOrEditing && (
+						<ReviewForm
+							onSubmit={(data) => {
+								addOrUpdateUserReview(data);
+								setWriteMode(false);
+								setEditMode(false);
 							}}
-							sx={{ alignSelf: "center" }}
+							onClose={() => {
+								setWriteMode(false);
+								setEditMode(false);
+							}}
+							data={{
+								movieId,
+								initialContent: userReview?.content,
+								initialStars: userReview?.stars,
+								reviewId: userReview?.id,
+							}}
 						/>
-					</Box>
-				</Box>
-				{reviews.length > 0 && (
-					<>
-						{reviews.map((review) => (
-							<ReviewWithComments
-								key={review.id}
-								review={review}
-								isUser={false}
-								onVoteReview={voteHandler}
-							/>
-						))}
+					)}
 
-						<Box display="flex" justifyContent="center" mt={2}>
-							<Pagination
-								count={totalPages}
-								page={page}
-								onChange={(_, value) => setPage(value)}
-								shape="rounded"
-								size="large"
-								showLastButton
-								showFirstButton
+					{!isWritingOrEditing && hasUserReview && (
+						<Box mb={4}>
+							<Typography m={2} variant="h5" fontWeight="bold">
+								Your Review
+							</Typography>
+							<ReviewWithComments
+								review={userReview}
+								isUser
+								onChange={() => setEditMode(true)}
+								onVoteReview={voteHandler}
+								onDelete={deleteUserReviewHandler}
 							/>
 						</Box>
-					</>
-				)}
-				{reviews.length === 0 &&
-					(!userReview ? (
-						<Typography
-							mt={4}
-							ml={2}
-							display={"flex"}
-							justifyContent={"center"}
-							fontSize={18}
+					)}
+
+					{!isWritingOrEditing && !hasUserReview && (
+						<Button
+							variant="contained"
+							onClick={() => setWriteMode(true)}
+							sx={{ display: "block", mx: "auto", my: 8 }}
 						>
-							It's empty here🤷‍♂️
-						</Typography>
-					) : (
-						<Typography ml={2} fontSize={18}>
-							Only you reviewed this movie👀
-						</Typography>
+							Write a review
+						</Button>
+					)}
+				</>
+			)}
+
+			<ReviewsFilterOptions
+				filterOptions={filters}
+				updateFilter={updateFilter}
+			/>
+
+			{hasReviews && (
+				<>
+					{reviews.map((review) => (
+						<ReviewWithComments
+							key={review.id}
+							review={review}
+							isUser={false}
+							onVoteReview={voteHandler}
+						/>
 					))}
-			</Box>
+
+					<Pagination
+						count={totalPages}
+						page={page}
+						onChange={(_event, newPage) => setPage(newPage)}
+						shape="rounded"
+						size="large"
+						showLastButton
+						showFirstButton
+						sx={{
+							display: "flex",
+							justifyContent: "center",
+							mt: 1,
+						}}
+					/>
+				</>
+			)}
+
+			{isEmpty && <EmptyState emptyBecauseOfFilters={!!filters.rating} />}
+
+			{onlyUserReview && <OnlyUserReview />}
+		</Box>
+	);
+}
+
+function EmptyState({
+	emptyBecauseOfFilters,
+}: {
+	emptyBecauseOfFilters: boolean;
+}) {
+	return (
+		<Box display="flex" flexDirection="column" alignItems="center" py={8}>
+			<Typography variant="h1" mb={2}>
+				🧐
+			</Typography>
+			<Typography variant="h4" fontWeight="bold" gutterBottom>
+				Nothing to see here
+			</Typography>
+			<Typography color="text.secondary" maxWidth={400} textAlign="center">
+				{emptyBecauseOfFilters
+					? "No reviews match your current filters. Try changing the filter options!"
+					: "There are currently no reviews for this movie. It's your chance to	be the first to leave one!"}
+			</Typography>
+		</Box>
+	);
+}
+
+function OnlyUserReview() {
+	return (
+		<Box
+			display="flex"
+			flexDirection="column"
+			alignItems="center"
+			py={8}
+			px={2}
+			textAlign="center"
+		>
+			<Typography variant="h1" mb={2}>
+				👀
+			</Typography>
+			<Typography variant="h4" fontWeight="bold" gutterBottom>
+				Just you here!
+			</Typography>
+			<Typography color="text.secondary" maxWidth={400} textAlign="center">
+				You’re the only one who reviewed this movie so far. Share this film with
+				others and let them discover it too!
+			</Typography>
 		</Box>
 	);
 }

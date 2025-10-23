@@ -36,6 +36,7 @@ export default function CastList({ cast }: CastListProps) {
 					size="small"
 					onClick={() => setShowAll(!showAll)}
 					sx={{ fontSize: "0.75rem" }}
+					disableRipple
 				>
 					{showAll ? "Show Less" : "Show More"}
 				</Button>

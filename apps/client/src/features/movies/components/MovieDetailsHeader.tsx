@@ -7,7 +7,7 @@ type MovieHeaderProps = {
 	movie: Movie;
 };
 
-export default function MovieHeader({ movie }: MovieHeaderProps) {
+export default function MovieDetailsHeader({ movie }: MovieHeaderProps) {
 	const { title, release_date, credits, tagline, overview } = movie;
 
 	const movieYear = release_date.split("-")[0];
@@ -35,18 +35,25 @@ export default function MovieHeader({ movie }: MovieHeaderProps) {
 					{movieYear}
 				</Link>
 
-				<Typography fontSize={20} component="span" color="text.primary" mr={1}>
-					Directed by
-				</Typography>
+				<Box>
+					<Typography
+						fontSize={20}
+						component="span"
+						color="text.primary"
+						mr={1}
+					>
+						Directed by
+					</Typography>
 
-				<Link
-					component={RouterLink}
-					to={`/director/${slugify(director, { lower: true, strict: true })}`}
-					color="text.secondary"
-					fontSize={23}
-				>
-					{director}
-				</Link>
+					<Link
+						component={RouterLink}
+						to={`/director/${slugify(director, { lower: true, strict: true })}`}
+						color="text.secondary"
+						fontSize={23}
+					>
+						{director}
+					</Link>
+				</Box>
 			</Box>
 
 			{tagline && (
