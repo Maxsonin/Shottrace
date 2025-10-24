@@ -1,27 +1,24 @@
-import {
-  registerDecorator,
-  ValidationOptions,
-  ValidationArguments,
-} from 'class-validator';
+import { registerDecorator, ValidationOptions } from "class-validator";
+
+const ALLOWED_RATINGS = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
 
 export function IsValidRating(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
-    registerDecorator({
-      name: 'IsValidRating',
-      target: object.constructor,
-      propertyName: propertyName,
-      options: validationOptions,
-      validator: {
-        validate(value: any, _args: ValidationArguments) {
-          const allowed = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0];
-          return (
-            typeof value === 'number' &&
-            allowed.includes(Number(value.toFixed(1)))
-          );
-        },
-        defaultMessage: () =>
-          'Rating must be one of the following values: 0.5, 1.0, 1.5, ..., 5.0',
-      },
-    });
-  };
+	return (object: Object, propertyName: string) => {
+		registerDecorator({
+			name: "IsValidRating",
+			target: object.constructor,
+			propertyName,
+			options: validationOptions,
+			validator: {
+				validate(value: any) {
+					if (typeof value !== "number") return false; // ensures number
+
+					return ALLOWED_RATINGS.includes(value);
+				},
+				defaultMessage() {
+					return `Rating must be one of: ${ALLOWED_RATINGS.join(", ")}`;
+				},
+			},
+		});
+	};
 }

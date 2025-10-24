@@ -8,7 +8,7 @@
 	"files": {
 		"ignoreUnknown": false,
 		"includes": [
-			"**/*.{js,ts,jsx,tsx}",
+			"**/*.{js,ts,jsx,tsx,json}",
 			"!**/node_modules",
 			"!**/dist",
 			"!**/build"
@@ -21,21 +21,12 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true,
-			"suspicious": {
-				"noExplicitAny": "off"
-			},
-			"style": {
-				"noNonNullAssertion": "off"
-			}
+			"recommended": true
 		}
 	},
 	"javascript": {
 		"formatter": {
 			"quoteStyle": "double"
-		},
-		"parser": {
-			"unsafeParameterDecoratorsEnabled": true
 		}
 	},
 	"assist": {

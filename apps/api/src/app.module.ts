@@ -1,32 +1,32 @@
-import { Module } from '@nestjs/common';
-import { AuthModule } from './auth/auth.module';
-import { PrismaModule } from './prisma/prisma.module';
-import { RedisModule } from './redis/redis.module';
-import { UserModule } from './user/user.module';
-import { JwtAuthGuard } from './common/guards/jwt.guard';
-import { ConfigModule } from '@nestjs/config';
-import { ReviewModule } from './review/review.module';
-import { CommentModule } from './comment/comment.module';
-import envConfig from './config/env.config';
+import { Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
+import { JwtAuthGuard } from "./common/guards/jwt.guard";
+import { envConfig } from "./core/config/env.config";
+import { PrismaModule } from "./core/prisma/prisma.module";
+import { RedisModule } from "./core/redis/redis.module";
+import { AuthModule } from "./modules/auth/auth.module";
+import { CommentModule } from "./modules/comment/comment.module";
+import { ReviewModule } from "./modules/review/review.module";
+import { UserModule } from "./modules/user/user.module";
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      load: [envConfig],
-    }),
-    AuthModule,
-    PrismaModule,
-    RedisModule,
-    UserModule,
-    ReviewModule,
-    CommentModule,
-  ],
-  providers: [
-    {
-      provide: 'APP_GUARD',
-      useClass: JwtAuthGuard,
-    },
-  ],
+	imports: [
+		ConfigModule.forRoot({
+			isGlobal: true,
+			load: [envConfig],
+		}),
+		AuthModule,
+		PrismaModule,
+		RedisModule,
+		UserModule,
+		ReviewModule,
+		CommentModule,
+	],
+	providers: [
+		{
+			provide: "APP_GUARD",
+			useClass: JwtAuthGuard,
+		},
+	],
 })
 export class AppModule {}

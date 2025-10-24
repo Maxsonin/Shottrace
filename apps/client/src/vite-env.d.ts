@@ -2,10 +2,10 @@
 /// <reference types="vite-plugin-svgr/client" />
 
 interface ImportMetaEnv {
-  readonly VITE_API_URL: string;
-  readonly TMDB_TOKEN: string;
+	readonly VITE_API_URL: string;
+	readonly TMDB_TOKEN: string;
 }
 
 interface ImportMeta {
-  readonly env: ImportMetaEnv;
+	readonly env: ImportMetaEnv;
 }
