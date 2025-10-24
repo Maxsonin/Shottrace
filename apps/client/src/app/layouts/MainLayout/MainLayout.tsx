@@ -1,13 +1,13 @@
 import "./MainLayout.css";
 import { Box } from "@mui/material";
 import Container from "@mui/material/Container";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import Footer from "@/shared/components/layout/Footer";
-import Navbar from "@/shared/components/layout/Navbar";
+import Navbar from "@/shared/components/layout/NavBar/Navbar";
 
 export type OutletContextType = {
-	setBackgroundImage: (img: string | undefined) => void;
+	usePageBackground: (img?: string) => void;
 };
 
 export default function MainLayout() {
@@ -15,30 +15,32 @@ export default function MainLayout() {
 		undefined,
 	);
 
-	return (
-		<Box
-			sx={{
-				display: "flex",
-				flexDirection: "column",
-				minHeight: "100vh",
-			}}
-		>
-			{backgroundImage && (
-				<div
-					className="background-img-fade"
-					style={{ backgroundImage: `url(${backgroundImage})` }}
-				/>
-			)}
+	// Helper function for pages with automatic cleanup
+	const usePageBackground = (img?: string) => {
+		useEffect(() => {
+			setBackgroundImage(img);
+			return () => setBackgroundImage(undefined);
+		}, [img]);
+	};
 
+	return (
+		<>
 			<Container
+				maxWidth="lg"
 				sx={{
-					position: "relative",
-					maxWidth: "950px",
-					flex: 1,
+					position: "relative", // positioning context for background
 					display: "flex",
 					flexDirection: "column",
+					minHeight: "100vh",
 				}}
 			>
+				{backgroundImage && (
+					<div
+						className="background-img-fade"
+						style={{ backgroundImage: `url(${backgroundImage})` }}
+					/>
+				)}
+
 				<Navbar />
 				<Box
 					component="main"
@@ -47,10 +49,10 @@ export default function MainLayout() {
 						mt: backgroundImage ? { xs: "100px", sm: "400px" } : "50px",
 					}}
 				>
-					<Outlet context={{ setBackgroundImage } as OutletContextType} />
+					<Outlet context={{ usePageBackground } as OutletContextType} />
 				</Box>
 			</Container>
 			<Footer />
-		</Box>
+		</>
 	);
 }

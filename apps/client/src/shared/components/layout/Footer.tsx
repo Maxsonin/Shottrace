@@ -1,23 +1,39 @@
 import { Facebook, Instagram, X, YouTube } from "@mui/icons-material";
-import { Box, IconButton, Link, Stack, Typography } from "@mui/material";
-import { FaTiktok } from "react-icons/fa6";
+import {
+	Box,
+	IconButton,
+	Link,
+	Stack,
+	Tooltip,
+	Typography,
+} from "@mui/material";
+
+const SOCIAL_LINKS = [
+	{ name: "Instagram", href: "#", icon: <Instagram />, color: "#E1306C" },
+	{ name: "X / Twitter", href: "#", icon: <X />, color: "#000000" },
+	{ name: "Facebook", href: "#", icon: <Facebook />, color: "#1877F2" },
+	{ name: "YouTube", href: "#", icon: <YouTube />, color: "#FF0000" },
+];
+
+const FOOTER_LINKS = [
+	{ name: "About", href: "#" },
+	{ name: "Pro", href: "#" },
+	{ name: "News", href: "#" },
+	{ name: "Apps", href: "#" },
+	{ name: "Help", href: "#" },
+	{ name: "Terms", href: "#" },
+	{ name: "API", href: "#" },
+	{ name: "Contact", href: "#" },
+];
 
 export default function Footer() {
-	const socials = [
-		{ name: "Instagram", href: "#", icon: <Instagram />, color: "#E1306C" },
-		{ name: "X / Twitter", href: "#", icon: <X />, color: "#000000" },
-		{ name: "Facebook", href: "#", icon: <Facebook />, color: "#1877F2" },
-		{ name: "TikTok", href: "#", icon: <FaTiktok />, color: "#ff0050" },
-		{ name: "YouTube", href: "#", icon: <YouTube />, color: "#FF0000" },
-	];
-
 	return (
 		<Box
 			component="footer"
 			sx={{
 				mt: 6,
-				py: 3,
-				px: 3,
+				py: { xs: 4, sm: 6 },
+				px: { xs: 2, sm: 3 },
 				bgcolor: "background.paper",
 			}}
 		>
@@ -26,55 +42,57 @@ export default function Footer() {
 					maxWidth: 950,
 					mx: "auto",
 					display: "flex",
+					flexDirection: { xs: "column", sm: "row" },
 					justifyContent: "space-between",
-					alignItems: "center",
-					mb: 2,
+					alignItems: { xs: "center", sm: "flex-start" },
 				}}
 			>
-				<Box>
-					<Stack direction="row" spacing={2} mb={1}>
-						{[
-							"About",
-							"Pro",
-							"News",
-							"Apps",
-							"Help",
-							"Terms",
-							"API",
-							"Contact",
-						].map((label) => (
-							<Link key={label} href="#" underline="hover">
-								{label}
+				{/* Footer Links & Text */}
+				<Box sx={{ textAlign: { xs: "center", sm: "left" } }}>
+					<Stack
+						direction="row"
+						flexWrap="wrap"
+						justifyContent={{ xs: "center", sm: "flex-start" }}
+						spacing={1}
+					>
+						{FOOTER_LINKS.map((link) => (
+							<Link key={link.name} href={link.href} underline="none">
+								{link.name}
 							</Link>
 						))}
 					</Stack>
 
-					<Typography
-						variant="body2"
-						color="text.secondary"
-						sx={{ fontSize: { xs: "0.7rem", sm: "0.8rem" } }}
-					>
+					<Typography color="text.secondary" sx={{ mt: 1 }}>
 						© Shottrace. Pet project made by Maxim Lesko. Film data from TMDB.
 					</Typography>
 				</Box>
 
-				<Stack direction="row" spacing={1}>
-					{socials.map((social) => (
-						<IconButton
-							key={social.name}
-							href={social.href}
-							aria-label={social.name}
-							sx={{
-								color: "text.secondary",
-								transition: "color 0.3s",
-								"&:hover": {
-									backgroundColor: "transparent",
-									color: social.color,
-								},
-							}}
-						>
-							{social.icon}
-						</IconButton>
+				{/* Social Media Links */}
+				<Stack
+					direction="row"
+					spacing={1}
+					justifyContent={{
+						xs: "flex-start",
+						sm: "center",
+						md: "flex-end",
+					}}
+					mt={{ xs: 2, sm: 0 }}
+				>
+					{SOCIAL_LINKS.map(({ name, href, icon, color }) => (
+						<Tooltip key={name} title={name} placement="top" arrow>
+							<IconButton
+								href={href}
+								sx={{
+									transition: "color 0.3s",
+									"&:hover": {
+										backgroundColor: "transparent",
+										color: color,
+									},
+								}}
+							>
+								{icon}
+							</IconButton>
+						</Tooltip>
 					))}
 				</Stack>
 			</Box>

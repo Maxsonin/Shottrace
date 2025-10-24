@@ -2,15 +2,11 @@ import {
 	Box,
 	Button,
 	CircularProgress,
-	FormControl,
-	InputLabel,
-	MenuItem,
 	Pagination,
-	Rating,
-	Select,
+	Stack,
 	Typography,
 } from "@mui/material";
-import { useId, useState } from "react";
+import { useState } from "react";
 import { useAuth } from "@/app/providers/AuthProvider";
 import { useReviews } from "../hooks/useReviews";
 import { useUserReview } from "../hooks/useUserReview";
@@ -21,8 +17,8 @@ import type {
 	SortOptions,
 } from "../types/reviews.type";
 import ReviewForm from "./ReviewForm";
-import ReviewWithComments from "./ReviewWithComments";
 import ReviewsFilterOptions from "./ReviewsFilterOptions";
+import ReviewWithComments from "./ReviewWithComments";
 
 export default function Reviews({ movieId }: { movieId: string }) {
 	const { user } = useAuth();
@@ -79,7 +75,7 @@ export default function Reviews({ movieId }: { movieId: string }) {
 	const hasUserReview = !!userReview;
 
 	return (
-		<Box p={2}>
+		<Box mx={2}>
 			{user && (
 				<>
 					{isWritingOrEditing && (
@@ -136,14 +132,16 @@ export default function Reviews({ movieId }: { movieId: string }) {
 
 			{hasReviews && (
 				<>
-					{reviews.map((review) => (
-						<ReviewWithComments
-							key={review.id}
-							review={review}
-							isUser={false}
-							onVoteReview={voteHandler}
-						/>
-					))}
+					<Stack spacing={2}>
+						{reviews.map((review) => (
+							<ReviewWithComments
+								key={review.id}
+								review={review}
+								isUser={false}
+								onVoteReview={voteHandler}
+							/>
+						))}
+					</Stack>
 
 					<Pagination
 						count={totalPages}
