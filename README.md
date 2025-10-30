@@ -21,6 +21,7 @@ Current development goals:
 - Integrate Redux for advanced state management
 - Deploy the app on AWS
 - Integrate the TMDB API using GraphQL to fetch movie data efficiently
+- Migrate to Next.js for SEO benefits
   
 ---
 
@@ -40,3 +41,4 @@ Current development goals:
 - Turborepo (monorepo setup)
 - pnpm (package management)
 - Vite (build & dev server)
+
