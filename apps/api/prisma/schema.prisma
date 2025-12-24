@@ -1,5 +1,7 @@
 generator client {
-  provider = "prisma-client-js"
+  provider     = "prisma-client"
+  output       = "client/generated"
+  moduleFormat = "cjs"
 }
 
 datasource db {
@@ -8,74 +10,89 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id               String  @id @default(uuid()) @db.Uuid
   email            String  @unique
   username         String  @unique
   passwordHash     String
   refreshTokenHash String?
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   reviews  Review[]
   comments Comment[]
   votes    Vote[]
+}
 
-  @@map("users")
+model Movie {
+  id            String @id @default(uuid()) @db.Uuid
+  tmdbId        Int    @unique
+  title         String
+  year          Int
+  canonicalSlug String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reviews Review[]
 }
 
 model Review {
-  id         Int      @id @default(autoincrement())
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id         String @id @default(uuid()) @db.Uuid
   content    String
-  stars      Float
-  movieId    Int // TMDB ID
-  totalVotes Int      @default(0)
+  rating     Float
+  totalVotes Int    @default(0)
 
-  reviewer   User @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
-  reviewerId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  movie   Movie  @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  movieId String @db.Uuid
+
+  reviewer   User   @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
+  reviewerId String @db.Uuid
 
   comments Comment[] @relation("ReviewComments")
   votes    Vote[]
-
-  @@map("reviews")
 }
 
 model Comment {
-  id         Int      @id @default(autoincrement())
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id         String @id @default(uuid()) @db.Uuid
   content    String
-  totalVotes Int      @default(0)
+  totalVotes Int    @default(0)
 
-  commenter   User @relation(fields: [commenterId], references: [id], onDelete: Cascade)
-  commenterId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  commenter   User   @relation(fields: [commenterId], references: [id], onDelete: Cascade)
+  commenterId String @db.Uuid
 
   review   Review @relation("ReviewComments", fields: [reviewId], references: [id], onDelete: Cascade)
-  reviewId Int
+  reviewId String @db.Uuid
 
   parent   Comment? @relation("CommentToComment", fields: [parentId], references: [id], onDelete: Cascade)
-  parentId Int?
+  parentId String?  @db.Uuid
 
   children Comment[] @relation("CommentToComment")
 
   votes Vote[]
-
-  @@map("comments")
 }
 
 model Vote {
-  id     Int  @id @default(autoincrement())
-  value  Int // 1 or -1 for up/down
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId Int
+  id    String @id @default(uuid()) @db.Uuid
+  value Int // 1 or -1 for up/down
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @db.Uuid
 
   review   Review? @relation(fields: [reviewId], references: [id], onDelete: Cascade)
-  reviewId Int?
+  reviewId String? @db.Uuid
 
   comment   Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  commentId Int?
+  commentId String?  @db.Uuid
+
+  // NOTE: Custom DB constraint added in migration to enforce that
+  // exactly one of reviewId or commentId is set.
 
   @@unique([userId, reviewId])
   @@unique([userId, commentId])

@@ -1,20 +1,36 @@
-import { ConfigService } from "@nestjs/config";
-import { NestFactory } from "@nestjs/core";
-import { AppModule } from "./app.module";
-import { setupApp } from "./bootstrap";
-import { setupSwagger } from "./core/config/swagger.config";
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import cookieParser from 'cookie-parser';
+import { ValidationPipe } from '@nestjs/common';
+import { setupSwagger } from './setup-swagger';
+import { PrismaExceptionFilter } from './common/exception/prisma.exception';
 
 async function bootstrap() {
-	const app = await NestFactory.create(AppModule);
-	const configService = app.get(ConfigService);
+  const app = await NestFactory.create(AppModule);
 
-	const port = configService.get<number>("server.port")!;
-	const globalPrefix = configService.get<string>("api.globalPrefix")!;
-	const frontendOrigin = configService.get<string>("cors.origin")!;
+  app.enableCors({
+    origin: 'http://localhost:3001',
+    credentials: true,
+  });
+  app.use(cookieParser());
 
-	setupApp(app, { globalPrefix, frontendOrigin });
-	setupSwagger(app);
+  // Validation
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // Strip unknown properties
+      forbidNonWhitelisted: true, // Throw error on unknown properties
+      transform: true, // Automatically transform payloads to DTO instances
+      transformOptions: {
+        enableImplicitConversion: true, // Automatically convert types based on TypeScript types
+      },
+    }),
+  );
 
-	await app.listen(port);
+  app.useGlobalFilters(new PrismaExceptionFilter());
+
+  setupSwagger(app);
+
+  await app.listen(3000);
 }
-bootstrap();
+
+void bootstrap();
