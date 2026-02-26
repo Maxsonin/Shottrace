@@ -1,6 +1,6 @@
 'use client';
 
-import { signIn } from '@/app/auth/actions/signIn';
+import { signIn, signInWithGoogle } from '@/app/auth/actions/signIn';
 import {
   Dialog,
   DialogTrigger,
@@ -15,6 +15,9 @@ import { Input } from '@repo/ui/input';
 import { Label } from '@repo/ui/label';
 import { useAppDispatch } from '@/lib/store/hooks';
 import { setUser } from '@/lib/store/features/auth/authSlice';
+import { faGoogle } from '@fortawesome/free-brands-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Separator } from '@repo/ui/separator';
 
 export function SignInDialog({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch();
@@ -33,6 +36,7 @@ export function SignInDialog({ children }: { children: React.ReactNode }) {
   };
 
   return (
+    // TODO: add schema validation and React Hook Form
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
 
@@ -62,6 +66,13 @@ export function SignInDialog({ children }: { children: React.ReactNode }) {
             <Button type="submit">Sign In</Button>
           </DialogFooter>
         </form>
+
+        <Separator text={'or'} />
+
+        <Button onClick={signInWithGoogle}>
+          <FontAwesomeIcon icon={faGoogle} />
+          Sign In with Google
+        </Button>
       </DialogContent>
     </Dialog>
   );

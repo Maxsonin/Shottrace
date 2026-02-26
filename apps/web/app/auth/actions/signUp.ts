@@ -1,8 +1,8 @@
-export async function signIn(formData: FormData) {
+export async function signUp(formData: FormData) {
   const email = formData.get('email');
   const password = formData.get('password');
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/signin`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/signup`, {
     method: 'POST',
     body: JSON.stringify({ email, password }),
     headers: {
@@ -18,6 +18,6 @@ export async function signIn(formData: FormData) {
   return await res.json();
 }
 
-export function signInWithGoogle() {
+export function signUpWithGoogle() {
   window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
 }
