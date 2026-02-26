@@ -26,7 +26,7 @@ import { Button } from '@repo/ui/button';
 import ReviewForm from './ReviewForm';
 import { UpdateReviewDto } from '@repo/api';
 import ReviewsFilterOptions from './ReviewsFilterOptions';
-import { reviewsAdapter } from '@/lib/store/features/reviews/reviewsSlice';
+import { selectAllReviews } from '@/lib/store/features/reviews/reviewsSlice';
 
 export default function ReviewSection({ movieId }: { movieId: string }) {
   const { user } = useAppSelector((s) => s.auth);
@@ -78,9 +78,7 @@ export default function ReviewSection({ movieId }: { movieId: string }) {
     ...(filters.rating && { rating: filters.rating }),
   });
 
-  const reviews = useAppSelector((state) =>
-    reviewsAdapter.getSelectors().selectAll(state.reviews),
-  );
+  const reviews = useAppSelector(selectAllReviews);
 
   if (myReviewLoading || isLoading) return <p>Loading reviews...</p>;
 

@@ -1,5 +1,6 @@
 import { createEntityAdapter, createSlice } from '@reduxjs/toolkit';
 import { ReviewDto as Review } from '@repo/api';
+import { RootState } from '../../store';
 
 export const reviewsAdapter = createEntityAdapter<Review>();
 
@@ -14,3 +15,6 @@ const reviewsSlice = createSlice({
 
 export const reviewsActions = reviewsSlice.actions;
 export default reviewsSlice.reducer;
+
+export const { selectAll: selectAllReviews } =
+  reviewsAdapter.getSelectors<RootState>((state) => state.reviews);
