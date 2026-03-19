@@ -80,6 +80,7 @@ export class ReviewsService {
         orderBy: [{ [sortBy]: 'desc' }, { createdAt: 'desc' }],
         include: {
           reviewer: { select: { id: true, username: true } },
+          _count: { select: { comments: true } },
         },
       }),
       this.prisma.review.count({ where: whereCondition }),
@@ -102,6 +103,7 @@ export class ReviewsService {
       toDto(ReviewDto, {
         ...review,
         //comments: reviewCommentsMap.get(review.id),
+        totalComments: review._count.comments,
         userVote: userReviewsVoteMap.get(review.id) ?? 0,
       }),
     );
@@ -126,21 +128,26 @@ export class ReviewsService {
       },
       include: {
         reviewer: { select: { id: true, username: true } },
+        _count: { select: { comments: true } },
       },
     });
 
-    if (!userReview) {
-      return null;
-    }
+    if (!userReview) return null;
 
-    const [comments, userVote] = await Promise.all([
-      this.commentsService.getCommentsForReview(userReview.id, userId, sortBy),
-      this.votesService.getUserReviewVote(userReview.id, userId),
-    ]);
+    // const [comments, userVote] = await Promise.all([
+    //   this.commentsService.getCommentsForReview(userReview.id, userId, sortBy),
+    //   this.votesService.getUserReviewVote(userReview.id, userId),
+    // ]);
+
+    const userVote = await this.votesService.getUserReviewVote(
+      userReview.id,
+      userId,
+    );
 
     return toDto(ReviewDto, {
       ...userReview,
-      comments,
+      totalComments: userReview._count.comments,
+      // comments,
       userVote,
     });
   }

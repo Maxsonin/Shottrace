@@ -80,7 +80,7 @@ export default function ReviewWithComments({ review, isUser }: Props) {
         />
       )}
 
-      {!isEditing && (
+      {!isEditing && review.totalComments > 0 && (
         <div className="mt-1 ml-4 text-sm text-blue-600 cursor-pointer">
           <span onClick={() => setShowComments((s) => !s)}>
             {showComments ? 'Hide replies' : 'View replies'}

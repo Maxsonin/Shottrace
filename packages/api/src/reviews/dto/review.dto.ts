@@ -54,6 +54,10 @@ export class ReviewDto {
 
   @Expose()
   @IsInt()
+  totalComments: number;
+
+  @Expose()
+  @IsInt()
   userVote: number;
 
   @Expose()
