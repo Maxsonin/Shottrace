@@ -7,11 +7,18 @@ export interface TmdbMovie {
   poster_path?: string;
   backdrop_path?: string;
   runtime?: number;
-  credits: { crew: Crew[] };
+  credits: { cast: Cast[]; crew: Crew[] };
+}
+
+export interface Cast {
+  id: number;
+  name: string;
+  character: string;
 }
 
 export interface Crew {
   id: number;
-  job: string;
   name: string;
+  job: string;
+  department: string;
 }

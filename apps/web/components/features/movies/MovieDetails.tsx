@@ -10,7 +10,7 @@ interface Props {
 export default function MovieDetails({ movie }: Props) {
   return (
     <div className="flex gap-4 p-4">
-      {movie.posterPath && (
+      <div className="w-64 h-96 shrink-0">
         <Image
           src={`https://image.tmdb.org/t/p/w500${movie.posterPath}`}
           alt={`Poster of ${movie.title}`}
@@ -18,7 +18,7 @@ export default function MovieDetails({ movie }: Props) {
           height={384}
           className="rounded-xl"
         />
-      )}
+      </div>
 
       <section>
         <MovieHeader
@@ -31,7 +31,7 @@ export default function MovieDetails({ movie }: Props) {
         {movie.tagline && <h4 className="italic">{movie.tagline}</h4>}
         {movie.overview && <p>{movie.overview}</p>}
 
-        <MovieTabs />
+        <MovieTabs movie={movie} />
       </section>
     </div>
   );

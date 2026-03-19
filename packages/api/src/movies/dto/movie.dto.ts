@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Expose } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
+import { CastDto, CrewDto } from './credits.dto';
+import { ValidateNested } from 'class-validator';
 
 export class MovieDto {
   @ApiProperty()
@@ -41,4 +43,16 @@ export class MovieDto {
   @ApiProperty({ required: false })
   @Expose()
   director?: string;
+
+  @ApiProperty({ type: [CastDto], required: false })
+  @Expose({ name: 'cast' })
+  @ValidateNested({ each: true })
+  @Type(() => CastDto)
+  cast?: CastDto[];
+
+  @ApiProperty({ type: [CrewDto], required: false })
+  @Expose({ name: 'crew' })
+  @ValidateNested({ each: true })
+  @Type(() => CrewDto)
+  crew?: CrewDto[];
 }

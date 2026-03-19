@@ -16,6 +16,7 @@ export default async function MoviePage({ params }: Props) {
 
   try {
     const movie = await movieApi.getMovieDetails(slug);
+    if (!movie) notFound();
 
     return (
       <>

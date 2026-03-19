@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { createMovieSlug } from 'src/common/utils/slugify.util';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TmdbService } from 'src/tmdb/tmdb.service';
+import { groupCrewByCategory } from './utils/group-crew';
 
 @Injectable()
 export class MoviesService {
@@ -22,9 +23,11 @@ export class MoviesService {
     const releaseYear = Number.parseInt(
       tmdbMovieData.release_date.split('-')[0],
     );
-    const director = tmdbMovieData.credits.crew.find(
-      (crewMember) => crewMember.job === 'Director',
-    ).name;
+
+    const groupedCrew = groupCrewByCategory(tmdbMovieData.credits.crew);
+
+    const director = groupedCrew.find((item) => item.category === 'Director')
+      .names[0];
 
     return {
       ...tmdbMovieData,
@@ -32,6 +35,8 @@ export class MoviesService {
       releaseYear,
       director,
       id: movie.id,
+      cast: tmdbMovieData.credits.cast,
+      crew: groupedCrew,
     };
   }
 

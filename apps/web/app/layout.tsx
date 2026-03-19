@@ -2,16 +2,15 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 
-// import for Font Awesome’s supporting stylesheet
 import { config } from '@fortawesome/fontawesome-svg-core';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 import { Navbar } from '@/components/features/page/Navbar';
 import Footer from '@/components/features/page/Footer';
-import { usersApi } from '@/lib/api/user.api';
 import StoreProvider from './providers/StoreProvider';
-import { cookies } from 'next/headers';
 import { ClientAuthInitializer } from '@/components/features/auth/ClientAuthInitializer';
 config.autoAddCss = false;
+
+import { TooltipProvider } from '@repo/ui/tooltip';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -38,14 +37,16 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <StoreProvider>
-          <ClientAuthInitializer />
-          <div className="flex flex-col min-h-screen max-w-7xl mx-auto">
-            <Navbar />
-            <main className="flex-1">{children}</main>
-          </div>
-          <Footer />
-        </StoreProvider>
+        <TooltipProvider>
+          <StoreProvider>
+            <ClientAuthInitializer />
+            <div className="flex flex-col min-h-screen max-w-7xl mx-auto">
+              <Navbar />
+              <main className="flex-1">{children}</main>
+            </div>
+            <Footer />
+          </StoreProvider>
+        </TooltipProvider>
       </body>
     </html>
   );
