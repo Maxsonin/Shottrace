@@ -13,7 +13,7 @@ import {
   FilterOptions,
   ReviewsPerPageOptions,
   SortOptions,
-} from './review.types';
+} from './types/review.types';
 import { Button } from '@repo/ui/button';
 
 type ReviewsFilterOptionsProps = {
@@ -22,6 +22,7 @@ type ReviewsFilterOptionsProps = {
     key: keyof FilterOptions,
     value: FilterOptions[keyof FilterOptions],
   ) => void;
+  resetFilters: () => void;
 };
 
 const SORT_OPTIONS: Record<SortOptions, string> = {
@@ -34,17 +35,17 @@ const RATING_OPTIONS: ReviewsPerPageOptions[] = [5, 10, 25];
 export default function ReviewsFilterOptions({
   filterOptions,
   updateFilter,
+  resetFilters,
 }: ReviewsFilterOptionsProps) {
   const { limit, sortBy, rating } = filterOptions;
 
   return (
-    <div className="flex flex-wrap items-center justify-between p-4 gap-4">
+    <div className="flex flex-wrap items-center justify-between gap-4">
       <h2 className="text-xl font-bold">Reviews</h2>
 
       <div className="flex gap-4 flex-wrap items-center">
-        <Button>Clear filters</Button>
+        <Button onClick={() => resetFilters()}>Clear Filters</Button>
 
-        {/* Per page */}
         <div className="flex flex-col w-28">
           <Label>Per page</Label>
           <Select
@@ -64,7 +65,6 @@ export default function ReviewsFilterOptions({
           </Select>
         </div>
 
-        {/* Sort */}
         <div className="flex flex-col w-28">
           <Label>Sort by</Label>
           <Select
@@ -90,7 +90,7 @@ export default function ReviewsFilterOptions({
           <span className="text-sm font-semibold">Rating</span>
           <Rating
             value={rating ?? 0}
-            onValueChange={(v) => updateFilter('rating', v || null)}
+            onValueChange={(v) => updateFilter('rating', v)}
           >
             {Array.from({ length: 5 }).map((_, i) => (
               <RatingButton key={i} />

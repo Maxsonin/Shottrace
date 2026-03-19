@@ -35,6 +35,7 @@ export const reviewsApi = createApi({
           },
         };
       },
+      keepUnusedDataFor: 0,
     }),
 
     voteReview: builder.mutation<

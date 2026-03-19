@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import { useAppSelector } from '@/lib/store/hooks';
-import type {
-  FilterOptions,
-  ReviewsPerPageOptions,
-  SortOptions,
-} from './review.types';
+import {
+  DEFAULT_FILTERS,
+  type FilterOptions,
+  type ReviewsPerPageOptions,
+  type SortOptions,
+} from './types/review.types';
 import ReviewWithComments from './ReviewWithComments';
 import {
   useCreateMyReviewMutation,
@@ -24,7 +25,7 @@ import {
 } from '@repo/ui/pagination';
 import { Button } from '@repo/ui/button';
 import ReviewForm from './ReviewForm';
-import { UpdateReviewDto } from '@repo/api';
+import { ReviewDto as ReviewType, UpdateReviewDto } from '@repo/api';
 import ReviewsFilterOptions from './ReviewsFilterOptions';
 import { selectAllReviews } from '@/lib/store/features/reviews/reviewsSlice';
 
@@ -50,11 +51,7 @@ export default function ReviewSection({ movieId }: { movieId: string }) {
 
   const [page, setPage] = useState(1);
 
-  const [filters, setFilters] = useState<FilterOptions>({
-    limit: 5 as ReviewsPerPageOptions,
-    sortBy: 'createdAt' as SortOptions,
-    rating: null,
-  });
+  const [filters, setFilters] = useState<FilterOptions>(DEFAULT_FILTERS);
 
   const updateFilter = <K extends keyof FilterOptions>(
     key: K,
@@ -66,6 +63,7 @@ export default function ReviewSection({ movieId }: { movieId: string }) {
     }));
     setPage(1);
   };
+  const resetFilters = () => setFilters(DEFAULT_FILTERS);
 
   const { data: myReview, isLoading: myReviewLoading } =
     useGetMyReviewQuery(movieId);
@@ -78,11 +76,13 @@ export default function ReviewSection({ movieId }: { movieId: string }) {
     ...(filters.rating && { rating: filters.rating }),
   });
 
-  const reviews = useAppSelector(selectAllReviews);
+  const allReviews = useAppSelector(selectAllReviews);
+
+  const reviews = reviewsData?.reviews
+    .map((id) => allReviews.find((r) => r.id === id))
+    .filter((r): r is ReviewType => r !== undefined);
 
   if (myReviewLoading || isLoading) return <p>Loading reviews...</p>;
-
-  const noReviews = reviews?.length === 0;
 
   const totalPages = reviewsData?.totalPages ?? 0;
 
@@ -110,27 +110,24 @@ export default function ReviewSection({ movieId }: { movieId: string }) {
         )
       ) : null}
 
-      {noReviews ? (
-        myReview ? (
+      <ReviewsFilterOptions
+        filterOptions={filters}
+        updateFilter={updateFilter}
+        resetFilters={resetFilters}
+      />
+
+      {reviews?.length === 0 ? (
+        filters !== DEFAULT_FILTERS ? (
+          <EmptyState emptyBecauseOfFilters />
+        ) : myReview ? (
           <OnlyUserReview />
         ) : (
-          <EmptyState emptyBecauseOfFilters={false} />
+          <EmptyState />
         )
       ) : (
-        <section>
-          <ReviewsFilterOptions
-            filterOptions={filters}
-            updateFilter={updateFilter}
-          />
-
-          {reviews?.map((review) => (
-            <ReviewWithComments
-              key={review.id}
-              review={review}
-              isUser={false}
-            />
-          ))}
-        </section>
+        reviews?.map((review) => (
+          <ReviewWithComments key={review.id} review={review} isUser={false} />
+        ))
       )}
 
       {reviews && totalPages > 1 && (

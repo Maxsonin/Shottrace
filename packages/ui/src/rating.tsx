@@ -166,12 +166,15 @@ export const Rating = ({
       event: MouseEvent<HTMLButtonElement> | KeyboardEvent<HTMLButtonElement>,
       newValue: number,
     ) => {
-      if (!readOnly) {
-        onChange?.(event, newValue);
-        onValueChange?.(newValue);
-      }
+      if (readOnly) return;
+
+      const updatedValue = newValue === value ? 0 : newValue;
+
+      onChange?.(event, updatedValue);
+      onValueChange?.(updatedValue);
+      setFocusedStar(updatedValue);
     },
-    [readOnly, onChange, onValueChange],
+    [readOnly, onChange, onValueChange, value, setFocusedStar],
   );
 
   const handleKeyDown = useCallback(

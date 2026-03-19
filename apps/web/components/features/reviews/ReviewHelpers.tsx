@@ -1,7 +1,7 @@
 export function EmptyState({
-  emptyBecauseOfFilters,
+  emptyBecauseOfFilters = false,
 }: {
-  emptyBecauseOfFilters: boolean;
+  emptyBecauseOfFilters?: boolean;
 }) {
   return (
     <div className="flex flex-col items-center py-12 text-center">

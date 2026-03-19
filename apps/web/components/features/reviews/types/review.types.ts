@@ -6,3 +6,9 @@ export type FilterOptions = {
   sortBy: SortOptions;
   rating: number | null;
 };
+
+export const DEFAULT_FILTERS: FilterOptions = {
+  limit: 5,
+  sortBy: 'createdAt',
+  rating: null,
+};
