@@ -13,6 +13,7 @@ import {
 import { SignInDialog } from '../auth/SignInDialog';
 import { SignUpDialog } from '../auth/SignUpDialog';
 import { useAppSelector } from '@/lib/store/hooks';
+import Logo from '@/components/common/logo';
 
 export function Navbar() {
   const user = useAppSelector((state) => state.auth.user);
@@ -30,7 +31,7 @@ export function Navbar() {
     <nav className="py-4 px-6">
       <div className="flex justify-between">
         <Link href="/" className="text-2xl font-bold text-white">
-          Shottrace {/*  TODO: Make SVG */}
+          <Logo className="h-7" />
         </Link>
 
         <div className="flex gap-4 items-center">
