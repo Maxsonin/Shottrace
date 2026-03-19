@@ -62,5 +62,5 @@ export class ReviewDto {
 
   @Expose()
   @IsDate()
-  updatedAt: Date;
+  editedAt: Date;
 }

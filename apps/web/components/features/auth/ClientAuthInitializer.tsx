@@ -12,6 +12,8 @@ export function ClientAuthInitializer() {
     usersApi.getMe().then((user) => {
       if (user) {
         dispatch(setUser(user));
+      } else {
+        dispatch(setUser(null));
       }
     });
   }, [dispatch]);

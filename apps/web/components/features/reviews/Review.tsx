@@ -56,8 +56,10 @@ export default function Review({
         </div>
         <div className="text-sm text-gray-500">
           {formatDate(review.createdAt)}
-          {review.createdAt !== review.updatedAt && (
-            <span className="font-semibold ml-1">(edited)</span>
+          {review.editedAt && (
+            <span className="font-semibold ml-1">
+              (edited {formatDate(review.editedAt)})
+            </span>
           )}
         </div>
       </div>

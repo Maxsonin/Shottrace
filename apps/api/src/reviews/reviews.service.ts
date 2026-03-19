@@ -41,8 +41,12 @@ export class ReviewsService {
   async update(id: string, data: UpdateReviewDto) {
     const updatedReview = await this.prisma.review.update({
       where: { id },
-      data: { content: data.content, rating: data.rating },
-      select: { content: true, rating: true, updatedAt: true },
+      data: {
+        content: data.content,
+        rating: data.rating,
+        editedAt: new Date(),
+      },
+      select: { content: true, rating: true, editedAt: true },
     });
 
     return updatedReview;

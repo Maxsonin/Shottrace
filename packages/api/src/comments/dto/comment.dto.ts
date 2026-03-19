@@ -58,7 +58,7 @@ export class CommentDto {
   @Expose()
   @Type(() => Date)
   @IsDate()
-  updatedAt: Date;
+  editedAt: Date;
 
   @Expose()
   @IsBoolean()

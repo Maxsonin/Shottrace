@@ -70,7 +70,11 @@ export default function Comment({ comment, depth }: CommentProps) {
               <strong>{isUser ? 'You' : comment.commenter.username}</strong>
               <span className="text-sm text-gray-500">
                 {formatDate(comment.createdAt)}
-                {comment.createdAt !== comment.updatedAt && ' (edited)'}
+                {comment.editedAt && (
+                  <span className="font-semibold ml-1">
+                    (edited {formatDate(comment.editedAt)})
+                  </span>
+                )}
               </span>
             </div>
 
