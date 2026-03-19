@@ -3,6 +3,6 @@ import { apiFetch } from './client';
 
 export const usersApi = {
   getMe: () => {
-    return apiFetch<User>(`/users/me`);
+    return apiFetch<User>(`/users/me`, { credentials: 'include' });
   },
 };

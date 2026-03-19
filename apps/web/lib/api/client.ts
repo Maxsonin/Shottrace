@@ -16,16 +16,18 @@ type FetchOptions = RequestInit & {
   };
 };
 
+// TODO: add SWR for future client side caching
 export async function apiFetch<T>(
   path: string,
   options: FetchOptions = {},
 ): Promise<T | null> {
+  const { headers, ...rest } = options;
+
   const res = await fetch(`${API_URL}${path}`, {
-    credentials: 'include',
-    ...options,
+    ...rest,
     headers: {
       'Content-Type': 'application/json',
-      ...(options.headers ?? {}),
+      ...headers,
     },
   });
 

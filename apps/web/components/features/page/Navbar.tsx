@@ -16,7 +16,7 @@ import { useAppSelector } from '@/lib/store/hooks';
 import Logo from '@/components/common/logo';
 
 export function Navbar() {
-  const user = useAppSelector((state) => state.auth.user);
+  const { user, loading } = useAppSelector((state) => state.auth);
 
   const handleLogOut = () => {
     fetch('http://localhost:3000/auth/logout', {
@@ -38,7 +38,9 @@ export function Navbar() {
           <Link href="/movies">Movies</Link>
           <Link href="/lists">Lists</Link>
 
-          {!user ? (
+          {loading ? (
+            <div className="w-15" />
+          ) : !user ? (
             <>
               <SignInDialog>
                 <Button>Sign In</Button>
