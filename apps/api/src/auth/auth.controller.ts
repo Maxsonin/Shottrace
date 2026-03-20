@@ -51,9 +51,13 @@ export class AuthController {
 
   @ApiDoc(SignUpDocs)
   @Post('signup')
-  async register(@Body() createUserDto: SignUpDto) {
+  async register(
+    @Body() createUserDto: SignUpDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
     const user = await this.authService.register(createUserDto);
-    return toDto(UserDto, user);
+    const loggedInUser = await this.authService.login(user, response);
+    return toDto(UserDto, loggedInUser);
   }
 
   @ApiDoc({

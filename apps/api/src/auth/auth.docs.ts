@@ -39,7 +39,8 @@ export const SignInDocs: ApiDocConfig<SignInDto, UserDto> = {
 
 export const SignUpDocs: ApiDocConfig<SignUpDto, UserDto> = {
   summary: 'Sign up',
-  description: 'Register a new user with email, username, and password',
+  description:
+    'Register a new user with email, username, and password with automatic login',
   body: SignUpDto,
   bodyExamples: {
     ValidData: {

@@ -6,7 +6,7 @@ export class CreateReviewDto {
   @IsUUID()
   movieId: string;
 
-  @WordCount(1, 1000, { message: 'Review must be between 1 and 1000 words' })
+  @WordCount(1, 450, { message: 'Review must be between 1 and 1000 words' })
   content: string;
 
   @IsValidRating()

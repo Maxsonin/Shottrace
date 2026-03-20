@@ -28,6 +28,7 @@ export default function ReviewWithComments({ review, isUser }: Props) {
 
   const { isLoading } = useGetCommentsQuery(review.id, { skip: !showComments });
   const comments = useAppSelector(selectCommentsForReview(review.id));
+  const [totalComments, setTotalComments] = useState(review.totalComments);
 
   const [isEditing, setIsEditing] = useState(false);
 
@@ -80,10 +81,10 @@ export default function ReviewWithComments({ review, isUser }: Props) {
         />
       )}
 
-      {!isEditing && review.totalComments > 0 && (
+      {!isEditing && totalComments > 0 && (
         <div className="mt-1 ml-4 text-sm text-blue-600 cursor-pointer">
           <span onClick={() => setShowComments((s) => !s)}>
-            {showComments ? 'Hide replies' : 'View replies'}
+            {showComments ? 'Hide replies' : `View ${totalComments} replies`}
           </span>
         </div>
       )}
@@ -95,6 +96,8 @@ export default function ReviewWithComments({ review, isUser }: Props) {
             onCreate={(data) => {
               createComment(data);
               setIsReplying(false);
+              setTotalComments((prev) => prev + 1);
+              setShowComments(true);
             }}
             onClose={() => setIsReplying(false)}
           />
@@ -106,7 +109,12 @@ export default function ReviewWithComments({ review, isUser }: Props) {
           {isLoading ? (
             <p>Loading comments...</p>
           ) : (
-            <CommentsTree comments={comments} />
+            <CommentsTree
+              comments={comments}
+              onCommentDeleted={() =>
+                setTotalComments((prev) => Math.max(prev - 1, 0))
+              }
+            />
           )}
         </div>
       )}

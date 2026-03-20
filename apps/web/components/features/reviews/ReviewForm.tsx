@@ -1,60 +1,70 @@
 'use client';
 
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faX } from '@fortawesome/free-solid-svg-icons';
-import type { UpdateReviewDto } from '@repo/api';
-
 import { Button } from '@repo/ui/button';
 import { Rating, RatingButton } from '@repo/ui/rating';
 import { Textarea } from '@repo/ui/textarea';
-
-interface ReviewFormData {
-  initialContent?: string;
-  initialRating?: number;
-}
+import {
+  createReviewSchema,
+  updateReviewSchema,
+  CreateReviewInput,
+  UpdateReviewInput,
+} from '../../../lib/schemas/review';
 
 interface Props {
-  data: ReviewFormData;
-  onSubmit: (data: UpdateReviewDto) => void;
+  data: {
+    initialContent?: string;
+    initialRating?: number;
+    movieId?: string;
+  };
+  onSubmit: (data: CreateReviewInput | UpdateReviewInput) => void;
   onClose: () => void;
 }
 
-// USE REACT FORM LATER
 export default function ReviewForm({ data, onSubmit, onClose }: Props) {
-  const { initialContent = '', initialRating = 0 } = data;
+  const { initialContent = '', initialRating = 0, movieId } = data;
+  const isCreating = Boolean(movieId);
 
-  const [content, setContent] = useState(initialContent);
-  const [rating, setRating] = useState(initialRating);
+  const schema = isCreating ? createReviewSchema : updateReviewSchema;
 
-  const isWritingNewReview = initialContent === '' && initialRating === 0;
+  const initialValues = {
+    content: initialContent,
+    rating: initialRating,
+  };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<UpdateReviewInput>({
+    resolver: zodResolver(schema),
+    defaultValues: initialValues,
+  });
 
-    if (!content.trim()) {
-      alert('Please write your review.');
-      return;
+  const rating = watch('rating');
+  const content = watch('content');
+
+  const handleFormSubmit = (values: UpdateReviewInput) => {
+    if (isCreating) {
+      onSubmit({ ...values, movieId });
+    } else {
+      onSubmit(values);
     }
-
-    if (rating <= 0) {
-      alert('Please select a star rating.');
-      return;
-    }
-
-    onSubmit({ content, rating });
-    setContent('');
-    setRating(0);
   };
 
   return (
     <form
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmit(handleFormSubmit)}
       className="border border-gray-200 p-6 rounded-2xl"
     >
       <div className="flex justify-between">
         <h5 className="text-xl font-bold">
-          {isWritingNewReview ? 'Write a Review' : 'Edit Review'}
+          {isCreating ? 'Write a Review' : 'Edit Review'}
         </h5>
         <Button onClick={onClose}>
           <FontAwesomeIcon icon={faX} />
@@ -65,31 +75,43 @@ export default function ReviewForm({ data, onSubmit, onClose }: Props) {
         <p className="mr-2">Your Rating:</p>
         <Rating
           value={rating}
-          onValueChange={(value) => {
-            console.log('rating changed:', value);
-            setRating(value);
-          }}
+          onValueChange={(value) =>
+            setValue('rating', value, { shouldValidate: true })
+          }
           className="flex"
         >
           {Array.from({ length: 5 }).map((_, index) => (
             <RatingButton key={index} />
           ))}
         </Rating>
+        {errors.rating && (
+          <p className="text-red-500 text-sm">{errors.rating.message}</p>
+        )}
       </div>
 
       <Textarea
-        value={content}
-        onChange={(e) => setContent(e.currentTarget.value)}
+        {...register('content')}
         placeholder="Write your review here..."
-        className="mb-4 min-h-[100px] resize-none"
+        className="mb-1 min-h-[100px] resize-none"
       />
+      <p className="text-sm text-gray-500">
+        {content.trim().split(/\s+/).filter(Boolean).length} / 450 words
+      </p>
+      {errors.content && (
+        <p className="text-red-500 text-sm mb-4">{errors.content.message}</p>
+      )}
 
       <div className="flex justify-end">
         <Button
           type="submit"
           className="bg-green-500 text-white hover:bg-green-600"
+          disabled={
+            !isCreating &&
+            content === initialValues.content &&
+            rating === initialValues.rating
+          }
         >
-          {isWritingNewReview ? 'Submit Review' : 'Update Review'}
+          {isCreating ? 'Submit Review' : 'Update Review'}
         </Button>
       </div>
     </form>

@@ -19,24 +19,52 @@ import { faGoogle } from '@fortawesome/free-brands-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Separator } from '@repo/ui/separator';
 
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useState } from 'react';
+
+const schema = z.object({
+  email: z.email('Invalid email'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
+
+type FormData = z.infer<typeof schema>;
+
 export function SignInDialog({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch();
+  const [serverError, setServerError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: any) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+  });
 
+  const onSubmit = async (data: FormData) => {
     try {
-      const user = await signIn(formData);
+      setServerError(null);
+
+      const user = await signIn(data);
       dispatch(setUser(user));
       window.location.reload();
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      const message = err.message || 'Something went wrong';
+
+      if (message.toLowerCase().includes('email')) {
+        setError('email', { message });
+      } else if (message.toLowerCase().includes('password')) {
+        setError('password', { message });
+      } else {
+        setServerError(message);
+      }
     }
   };
 
   return (
-    // TODO: add schema validation and React Hook Form
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
 
@@ -45,25 +73,39 @@ export function SignInDialog({ children }: { children: React.ReactNode }) {
           <DialogTitle>Sign In</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid gap-4">
-            <div className="grid gap-3">
+            <div className="grid gap-2">
               <Label>Email</Label>
-              <Input name="email" placeholder="example@domain.com" />
+              <Input {...register('email')} placeholder="example@domain.com" />
+              {errors.email && (
+                <p className="text-sm text-red-500">{errors.email.message}</p>
+              )}
             </div>
 
-            <div className="grid gap-3">
+            <div className="grid gap-2">
               <Label>Password</Label>
-              <Input name="password" type="password" />
+              <Input {...register('password')} type="password" />
+              {errors.password && (
+                <p className="text-sm text-red-500">
+                  {errors.password.message}
+                </p>
+              )}
             </div>
           </div>
+
+          {serverError && (
+            <p className="text-sm text-red-500 mt-3">{serverError}</p>
+          )}
 
           <DialogFooter className="mt-4">
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
 
-            <Button type="submit">Sign In</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Signing in...' : 'Sign In'}
+            </Button>
           </DialogFooter>
         </form>
 

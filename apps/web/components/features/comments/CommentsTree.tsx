@@ -30,11 +30,13 @@ export function buildCommentTree(
 type CommentsTreeProps = {
   comments: CommentType[];
   depth?: number;
+  onCommentDeleted?: () => void;
 };
 
 export default function CommentsTree({
   comments,
   depth = 0,
+  onCommentDeleted,
 }: CommentsTreeProps) {
   const tree = buildCommentTree(comments);
 
@@ -43,7 +45,12 @@ export default function CommentsTree({
   return (
     <div className="mt-3 space-y-3">
       {tree.map((node) => (
-        <Comment key={node.id} comment={node} depth={depth} />
+        <Comment
+          key={node.id}
+          comment={node}
+          depth={depth}
+          onCommentDeleted={onCommentDeleted}
+        />
       ))}
     </div>
   );

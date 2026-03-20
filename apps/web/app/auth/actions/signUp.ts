@@ -1,21 +1,22 @@
-export async function signUp(formData: FormData) {
-  const email = formData.get('email');
-  const password = formData.get('password');
+import { SignUpDto } from '@repo/api';
 
+export async function signUp(data: SignUpDto) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/signup`, {
     method: 'POST',
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify(data),
     headers: {
       'Content-Type': 'application/json',
     },
     credentials: 'include',
   });
 
+  const result = await res.json();
+
   if (!res.ok) {
-    throw new Error('Invalid credentials');
+    throw new Error(result.message || 'Something went wrong');
   }
 
-  return await res.json();
+  return result;
 }
 
 export function signUpWithGoogle() {

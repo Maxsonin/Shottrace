@@ -16,9 +16,14 @@ import { useAppSelector } from '@/lib/store/hooks';
 interface CommentProps {
   comment: CommentWithChildren;
   depth: number;
+  onCommentDeleted?: () => void;
 }
 
-export default function Comment({ comment, depth }: CommentProps) {
+export default function Comment({
+  comment,
+  depth,
+  onCommentDeleted,
+}: CommentProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
 
@@ -37,9 +42,14 @@ export default function Comment({ comment, depth }: CommentProps) {
     });
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (confirm('Are you sure you want to delete this comment?')) {
-      deleteComment({ commentId: comment.id });
+      try {
+        await deleteComment({ commentId: comment.id }).unwrap();
+        onCommentDeleted?.();
+      } catch (err) {
+        console.error('Failed to delete comment', err);
+      }
     }
   };
 
@@ -119,6 +129,7 @@ export default function Comment({ comment, depth }: CommentProps) {
               )}
             </div>
           </div>
+
           {isReplying && (
             <div className="mt-3 pl-4 border-l border-green-400">
               <CommentForm
@@ -126,20 +137,26 @@ export default function Comment({ comment, depth }: CommentProps) {
                 onCreate={(data) => {
                   createComment(data);
                   setIsReplying(false);
+                  onCommentDeleted?.();
                 }}
                 onClose={() => setIsReplying(false)}
               />
             </div>
           )}
-        </>
-      )}
 
-      {comment.children.length > 0 && (
-        <div className="mt-3 space-y-3">
-          {comment.children.map((child) => (
-            <Comment key={child.id} comment={child} depth={depth + 1} />
-          ))}
-        </div>
+          {comment.children.length > 0 && (
+            <div className="mt-3 space-y-3">
+              {comment.children.map((child) => (
+                <Comment
+                  key={child.id}
+                  comment={child}
+                  depth={depth + 1}
+                  onCommentDeleted={onCommentDeleted}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );
