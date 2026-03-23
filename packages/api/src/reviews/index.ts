@@ -1,5 +1,8 @@
 export { CreateReviewDto } from './dto/create-review.dto';
-export { UpdateReviewDto } from './dto/update-review.dto';
+export {
+  UpdateReviewDto,
+  UpdateReviewResponseDto,
+} from './dto/update-review.dto';
 
 export { ReviewDto } from './dto/review.dto';
 export { PaginatedReviewsDto } from './dto/paginated-reviews.dto';

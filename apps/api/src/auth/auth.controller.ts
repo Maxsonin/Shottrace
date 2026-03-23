@@ -125,6 +125,16 @@ export class AuthController {
     return { url: this.redirectUrl };
   }
 
+  @ApiDoc({
+    summary: 'Get currently logged in user',
+    responses: [
+      {
+        status: HttpStatus.OK,
+        type: UserDto,
+        description: 'Returns currently logged in user',
+      },
+    ],
+  })
   @Get('me')
   @UseGuards(JwtAuthGuard)
   async me(@CurrentUser() user: User) {

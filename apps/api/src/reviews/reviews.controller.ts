@@ -4,7 +4,6 @@ import {
   Delete,
   Get,
   Param,
-  ParseIntPipe,
   Patch,
   Post,
   Query,
@@ -14,11 +13,20 @@ import { ReviewsService } from './reviews.service';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { User } from 'prisma/client/generated/client';
 import { VotesService } from 'src/votes/vote.service';
-import { PaginatedReviewsQueryDto } from '@repo/api';
+import { PaginatedReviewsQueryDto, VoteDto } from '@repo/api';
 import { UpdateReviewDto } from '@repo/api';
 import { CreateReviewDto } from '@repo/api';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from 'src/common/guards/optionals-jwt-auth.guard';
+import { ApiDoc } from 'src/common/decorators/api-doc.decorator';
+import {
+  createReviewDocs,
+  deleteReviewDocs,
+  getMyReviewDocs,
+  getPaginatedReviewsDocs,
+  updateReviewDocs,
+  voteReviewDocs,
+} from './reviews.docs';
 
 @Controller()
 export class ReviewsController {
@@ -27,24 +35,28 @@ export class ReviewsController {
     private readonly votesService: VotesService,
   ) {}
 
+  @ApiDoc(createReviewDocs)
   @UseGuards(JwtAuthGuard)
   @Post('reviews')
   create(@CurrentUser() user: User, @Body() dto: CreateReviewDto) {
     return this.reviewsService.create(user.id, dto);
   }
 
+  @ApiDoc(updateReviewDocs)
   @UseGuards(JwtAuthGuard)
   @Patch('reviews/:id')
   update(@Param('id') id: string, @Body() data: UpdateReviewDto) {
     return this.reviewsService.update(id, data);
   }
 
+  @ApiDoc(deleteReviewDocs)
   @UseGuards(JwtAuthGuard)
   @Delete('reviews/:id')
   remove(@Param('id') id: string) {
     return this.reviewsService.remove(id);
   }
 
+  @ApiDoc(getPaginatedReviewsDocs)
   @UseGuards(OptionalJwtAuthGuard)
   @Get('movies/:movieId/reviews')
   getPaginatedReviews(
@@ -55,23 +67,25 @@ export class ReviewsController {
     return this.reviewsService.getPaginatedReviews(user.id, movieId, query);
   }
 
+  @ApiDoc(getMyReviewDocs)
   @UseGuards(JwtAuthGuard)
   @Get('movies/:movieId/reviews/my')
   getMyReview(
     @Param('movieId') movieId: string,
     @CurrentUser() user: User,
-    @Query() query: PaginatedReviewsQueryDto,
+    // @Query() query: PaginatedReviewsQueryDto,
   ) {
-    return this.reviewsService.getMyReview(movieId, user.id, query);
+    return this.reviewsService.getMyReview(movieId, user.id);
   }
 
+  @ApiDoc(voteReviewDocs)
   @UseGuards(JwtAuthGuard)
   @Post('reviews/:id/vote')
   voteReview(
     @Param('id') reviewId: string,
     @CurrentUser() user: User,
-    @Body('value', ParseIntPipe) value: 1 | -1 | 0,
+    @Body() data: VoteDto,
   ) {
-    return this.votesService.voteReview(user.id, reviewId, value);
+    return this.votesService.voteReview(user.id, reviewId, data.value);
   }
 }

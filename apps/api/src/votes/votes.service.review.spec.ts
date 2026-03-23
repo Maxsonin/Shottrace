@@ -4,7 +4,7 @@ import { VotesService } from './vote.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { Vote } from 'prisma/client/generated/client';
 import { createMock } from '../../test/utils/create-mock';
-import { ReviewVoteDto } from '@repo/api';
+import { ReviewVoteResponseDto } from '@repo/api';
 
 describe('VotesService - Reviews', () => {
   let voteService: VotesService;
@@ -46,7 +46,7 @@ describe('VotesService - Reviews', () => {
       reviewId: 'review1',
       userVote: 1,
       totalVotes: 5,
-    } as ReviewVoteDto);
+    } as ReviewVoteResponseDto);
   });
 
   it('removes existing vote and updates totalVotes', async () => {
@@ -62,7 +62,7 @@ describe('VotesService - Reviews', () => {
       reviewId: 'review1',
       userVote: 0,
       totalVotes: 3,
-    } as ReviewVoteDto);
+    } as ReviewVoteResponseDto);
   });
 
   it('does not change vote if value is the same', async () => {
@@ -78,7 +78,7 @@ describe('VotesService - Reviews', () => {
       reviewId: 'review1',
       userVote: 1,
       totalVotes: 10,
-    } as ReviewVoteDto);
+    } as ReviewVoteResponseDto);
   });
 
   it('changes existing vote and updates totalVotes', async () => {
@@ -94,6 +94,6 @@ describe('VotesService - Reviews', () => {
       reviewId: 'review1',
       userVote: 1,
       totalVotes: 7,
-    } as ReviewVoteDto);
+    } as ReviewVoteResponseDto);
   });
 });

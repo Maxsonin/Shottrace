@@ -1,1 +1,5 @@
-export type { CommentVoteDto, ReviewVoteDto } from './dto/vote.dto';
+export {
+  CommentVoteResponseDto,
+  ReviewVoteResponseDto,
+  VoteDto,
+} from './dto/vote.dto';

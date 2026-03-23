@@ -4,6 +4,7 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { STATUS_CODES } from 'node:http';
 import { ErrorResponseDto } from 'src/common/dto/default-error.dto';
@@ -22,8 +23,15 @@ export interface ApiDocConfig<BodyType = any, ResponsesType = any> {
   body?: new () => BodyType;
   auth?: boolean;
   bodyExamples?: Record<string, { summary: string; value: BodyType }>;
+  queries?: {
+    name: string;
+    description?: string;
+    required?: boolean;
+    type?: any;
+  }[];
   responses?: ApiDocResponse<ResponsesType>[];
 }
+
 export function ApiDoc(config: ApiDocConfig<any>) {
   const decorators = [
     ApiOperation({ summary: config.summary, description: config.description }),
@@ -38,6 +46,12 @@ export function ApiDoc(config: ApiDocConfig<any>) {
         examples: config.bodyExamples,
       }),
     );
+  }
+
+  if (config.queries) {
+    for (const query of config.queries) {
+      decorators.push(ApiQuery(query));
+    }
   }
 
   for (const resp of config.responses ?? []) {

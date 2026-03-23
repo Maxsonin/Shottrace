@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CommentVoteDto, ReviewVoteDto } from '@repo/api';
+import { CommentVoteResponseDto, ReviewVoteResponseDto } from '@repo/api';
 
 @Injectable()
 export class VotesService {
@@ -10,7 +10,7 @@ export class VotesService {
     userId: string,
     reviewId: string,
     value: 1 | -1 | 0,
-  ): Promise<ReviewVoteDto> {
+  ): Promise<ReviewVoteResponseDto> {
     const existingVote = await this.prisma.vote.findUnique({
       where: { userId_reviewId: { userId, reviewId } },
     });
@@ -78,7 +78,7 @@ export class VotesService {
     userId: string,
     commentId: string,
     value: 1 | -1 | 0,
-  ): Promise<CommentVoteDto> {
+  ): Promise<CommentVoteResponseDto> {
     const existingVote = await this.prisma.vote.findUnique({
       where: { userId_commentId: { userId, commentId } },
     });

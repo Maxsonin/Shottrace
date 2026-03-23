@@ -117,9 +117,9 @@ export class ReviewsService {
   async getMyReview(
     movieId: string,
     userId: string,
-    query: PaginatedReviewsQueryDto,
+    // query: PaginatedReviewsQueryDto,
   ): Promise<ReviewDto | null> {
-    const { sortBy = 'createdAt' } = query;
+    // const { sortBy = 'createdAt' } = query;
 
     const userReview = await this.prisma.review.findFirst({
       where: {

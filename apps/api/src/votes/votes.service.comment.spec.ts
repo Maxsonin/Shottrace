@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { Test } from '@nestjs/testing';
 import { VotesService } from './vote.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { CommentVoteDto } from '@repo/api';
+import { CommentVoteResponseDto } from '@repo/api';
 
 describe('VotesService - Comments', () => {
   let service: VotesService;
@@ -44,7 +44,7 @@ describe('VotesService - Comments', () => {
       commentId: 'comment1',
       userVote: 1,
       totalVotes: 2,
-    } as CommentVoteDto);
+    } as ReviewVoteResponseDto);
   });
 
   it('removes existing comment vote', async () => {
@@ -60,7 +60,7 @@ describe('VotesService - Comments', () => {
       commentId: 'comment1',
       userVote: 0,
       totalVotes: 0,
-    } as CommentVoteDto);
+    } as CommentVoteResponseDto);
   });
 
   it('does not change comment vote if value is the same', async () => {
@@ -76,7 +76,7 @@ describe('VotesService - Comments', () => {
       commentId: 'comment1',
       userVote: -1,
       totalVotes: -1,
-    } as CommentVoteDto);
+    } as CommentVoteResponseDto);
   });
 
   it('changes existing comment vote and updates totalVotes', async () => {
@@ -92,6 +92,6 @@ describe('VotesService - Comments', () => {
       commentId: 'comment1',
       userVote: -1,
       totalVotes: -1,
-    } as CommentVoteDto);
+    } as CommentVoteResponseDto);
   });
 });
