@@ -65,8 +65,8 @@ export default function ReviewSection({ movieId }: { movieId: string }) {
   };
   const resetFilters = () => setFilters(DEFAULT_FILTERS);
 
-  const { data: myReview, isLoading: myReviewLoading } =
-    useGetMyReviewQuery(movieId);
+  const { data: myReview = null, isLoading: myReviewLoading } =
+    useGetMyReviewQuery(movieId, { skip: !user });
 
   const { data: reviewsData, isLoading } = useGetPaginatedReviewsQuery({
     movieId,

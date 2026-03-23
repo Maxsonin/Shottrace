@@ -24,7 +24,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: 'Shottrace',
-  description: '',
+  description:
+    'Discover, track, and review films with friends. Build your personal movie diary and explore what others are watching.',
 };
 
 export default async function RootLayout({

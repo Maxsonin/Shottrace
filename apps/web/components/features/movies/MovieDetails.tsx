@@ -12,8 +12,8 @@ export default function MovieDetails({ movie }: Props) {
     <div className="flex gap-4 p-4">
       <div className="w-64 h-96 shrink-0">
         <Image
-          src={`https://image.tmdb.org/t/p/w500${movie.posterPath}`}
-          alt={`Poster of ${movie.title}`}
+          src={`https://image.tmdb.org/t/p/original${movie.posterPath}`}
+          alt={`Poster for ${movie.title}`}
           width={256}
           height={384}
           className="rounded-xl"
