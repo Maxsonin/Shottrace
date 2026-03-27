@@ -5,6 +5,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { setupSwagger } from './setup-swagger';
 import { PrismaExceptionFilter } from './common/exception/prisma.exception';
 
+const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -30,7 +32,8 @@ async function bootstrap() {
 
   setupSwagger(app);
 
-  await app.listen(3000);
+  await app.listen(port, '0.0.0.0');
+  console.log(`NestJS is running on port ${port}`);
 }
 
 void bootstrap();
