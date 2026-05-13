@@ -8,13 +8,14 @@ import { TmdbMovie } from './types/tmdb.type';
 
 @Injectable()
 export class TmdbService {
-  private readonly baseUrl = 'https://api.themoviedb.org/3';
+  private readonly baseUrl = 'https://api.themoviedb.org/3'; //TODO: move to config
   private readonly apiKey: string;
 
   constructor(private readonly configService: ConfigService) {
     this.apiKey = this.configService.getOrThrow('TMDB_API_KEY');
   }
 
+  // TODO: can hang forever, add timeout (add httpService?)
   async getMovieDetails(tmdbId: number): Promise<TmdbMovie> {
     try {
       const url = `${this.baseUrl}/movie/${tmdbId}?append_to_response=credits&language=en-US`;
@@ -29,6 +30,7 @@ export class TmdbService {
       const data = await res.json();
 
       if (!res.ok) {
+        // TODO: incorrect error handling
         if (data.status_code === 34) {
           throw new NotFoundException(`Movie with TMDB ID ${tmdbId} not found`);
         }

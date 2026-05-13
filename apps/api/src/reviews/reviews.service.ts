@@ -57,6 +57,7 @@ export class ReviewsService {
     return { id };
   }
 
+  // TODO: cursor based pagination for better performance on large datasets
   async getPaginatedReviews(
     userId: string | null,
     movieId: string,

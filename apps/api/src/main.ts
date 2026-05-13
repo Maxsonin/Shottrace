@@ -6,12 +6,13 @@ import { setupSwagger } from './setup-swagger';
 import { PrismaExceptionFilter } from './common/exception/prisma.exception';
 
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+const frontendUrl = process.env.FRONTEND_URL;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: 'http://localhost:3001',
+    origin: frontendUrl,
     credentials: true,
   });
   app.use(cookieParser());

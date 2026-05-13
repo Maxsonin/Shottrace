@@ -19,7 +19,7 @@ export function Navbar() {
   const { user, loading } = useAppSelector((state) => state.auth);
 
   const handleLogOut = () => {
-    fetch('http://localhost:3000/auth/logout', {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
       method: 'POST',
       credentials: 'include',
     }).then(() => {

@@ -22,12 +22,15 @@ export default async function proxy(request: NextRequest) {
 
   // If user NOT authenticated but has refresh token → attempt refresh
   if (!auth && refresh) {
-    const refreshRes = await fetch(`http://localhost:3000/auth/refresh`, {
-      method: 'POST',
-      headers: {
-        Cookie: cookies().toString(),
+    const refreshRes = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
+      {
+        method: 'POST',
+        headers: {
+          Cookie: cookies().toString(),
+        },
       },
-    });
+    );
 
     const forwardedCookies = extractCookiesFromResponse(refreshRes);
 

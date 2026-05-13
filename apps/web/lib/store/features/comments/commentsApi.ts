@@ -6,10 +6,12 @@ import {
 } from '@repo/api';
 import { commentsActions } from './commentsSlice';
 
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
 export const commentsApi = createApi({
   reducerPath: 'commentsApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: 'http://localhost:3000',
+    baseUrl: BASE_URL,
     credentials: 'include',
   }),
   tagTypes: ['Comments'],

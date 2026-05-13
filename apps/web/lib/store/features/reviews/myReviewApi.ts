@@ -1,10 +1,12 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { CreateReviewDto, ReviewDto, UpdateReviewDto } from '@repo/api';
 
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
 export const myReviewApi = createApi({
   reducerPath: 'myReviewApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: 'http://localhost:3000',
+    baseUrl: BASE_URL,
     credentials: 'include',
   }),
   tagTypes: ['MyReview'],
