@@ -1,5 +1,2 @@
-node_modules
-
-.env
-
-/prisma/client
+# Prisma generated
+/src/generated

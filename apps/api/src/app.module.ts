@@ -7,11 +7,13 @@ import { MoviesModule } from './movies/movies.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { CommentsModule } from './comments/comments.module';
 import { HealthModule } from './health/health.module';
+import { validate } from './config/env.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      validate,
     }),
     UsersModule,
     AuthModule,

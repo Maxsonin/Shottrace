@@ -7,7 +7,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { STATUS_CODES } from 'node:http';
-import { ErrorResponseDto } from 'src/common/dto/default-error.dto';
+import { ErrorResponseDto } from '../dto/default-error.dto';
 
 export interface ApiDocResponse<T = any> {
   status: HttpStatus;

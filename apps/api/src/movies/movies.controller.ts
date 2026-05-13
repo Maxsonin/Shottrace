@@ -1,8 +1,8 @@
 import { Controller, Get, Param, Redirect } from '@nestjs/common';
 import { MoviesService } from './movies.service';
-import { toDto } from 'src/common/utils/to-dto.util';
+import { toDto } from '../common/utils/to-dto.util';
 import { MovieDto } from '@repo/api';
-import { ApiDoc } from 'src/common/decorators/api-doc.decorator';
+import { ApiDoc } from '../common/decorators/api-doc.decorator';
 import { addMovieAndRedirectDocs, getMovieBySlugDocs } from './movies.docs';
 
 @Controller()

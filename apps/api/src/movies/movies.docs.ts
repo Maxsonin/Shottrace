@@ -1,6 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
 import { MovieDto } from '@repo/api';
-import { ApiDocConfig } from 'src/common/decorators/api-doc.decorator';
+import { ApiDocConfig } from '../common/decorators/api-doc.decorator';
 
 export const getMovieBySlugDocs: ApiDocConfig<null, MovieDto> = {
   summary: 'Fetch movie details by slug',

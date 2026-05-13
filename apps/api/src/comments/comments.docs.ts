@@ -6,7 +6,7 @@ import {
   CommentVoteResponseDto,
   UpdateCommentResponseDto,
 } from '@repo/api';
-import { ApiDocConfig } from 'src/common/decorators/api-doc.decorator';
+import { ApiDocConfig } from '../common/decorators/api-doc.decorator';
 
 export const getCommentsDocs: ApiDocConfig = {
   summary: 'Get all comments for a review',

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Response } from 'express';
 
-import { isProd } from 'src/common/utils/env.util';
+import { isProd } from '../../common/utils/env.util';
 
 @Injectable()
 export class CookieService {

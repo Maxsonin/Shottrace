@@ -10,15 +10,15 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ReviewsService } from './reviews.service';
-import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { User } from 'prisma/client/generated/client';
-import { VotesService } from 'src/votes/vote.service';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import type { User } from '../generated/prisma/client';
+import { VotesService } from '../votes/vote.service';
 import { PaginatedReviewsQueryDto, VoteDto } from '@repo/api';
 import { UpdateReviewDto } from '@repo/api';
 import { CreateReviewDto } from '@repo/api';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { OptionalJwtAuthGuard } from 'src/common/guards/optionals-jwt-auth.guard';
-import { ApiDoc } from 'src/common/decorators/api-doc.decorator';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../common/guards/optionals-jwt-auth.guard';
+import { ApiDoc } from '../common/decorators/api-doc.decorator';
 import {
   createReviewDocs,
   deleteReviewDocs,

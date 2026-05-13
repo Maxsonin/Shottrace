@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { CommentsService } from 'src/comments/comments.service';
-import { toDto } from 'src/common/utils/to-dto.util';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { VotesService } from 'src/votes/vote.service';
+import { CommentsService } from '../comments/comments.service';
+import { toDto } from '../common/utils/to-dto.util';
+import { PrismaService } from '../prisma/prisma.service';
+import { VotesService } from '../votes/vote.service';
 import { ReviewDto } from '@repo/api';
-import { CreateReviewDto } from '@repo/api/src/reviews/dto/create-review.dto';
+import { CreateReviewDto } from '@repo/api/reviews/dto/create-review.dto';
 import { UpdateReviewDto } from '@repo/api';
 import { PaginatedReviewsQueryDto } from '@repo/api';
-import { Prisma } from 'prisma/client/generated/client';
 import { PaginatedReviewsDto } from '@repo/api';
+import { Prisma } from '../generated/prisma/client';
 
 @Injectable()
 export class ReviewsService {

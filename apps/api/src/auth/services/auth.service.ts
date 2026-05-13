@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Response } from 'express';
 
 import { SignUpDto } from '@repo/api';
-import { User } from 'prisma/client/generated/client';
+import { User } from '../../generated/prisma/client';
 
 import { TokenService } from './token.service';
 import { CookieService } from './cookie.service';
@@ -56,7 +56,11 @@ export class AuthService {
   }
   async verifyUserRefreshToken(refreshToken: string, userId: string) {
     const user = await this.userService.getUserById(userId);
-    if (!user || !(await verify(user.refreshTokenHash, refreshToken))) {
+    if (
+      !user ||
+      !user.refreshTokenHash ||
+      !(await verify(user.refreshTokenHash, refreshToken))
+    ) {
       throw new InvalidCredentialsException();
     }
     return user;

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { createMovieSlug } from 'src/common/utils/slugify.util';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { TmdbService } from 'src/tmdb/tmdb.service';
+import { createMovieSlug } from '../common/utils/slugify.util';
+import { PrismaService } from '../prisma/prisma.service';
+import { TmdbService } from '../tmdb/tmdb.service';
 import { groupCrewByCategory } from './utils/group-crew';
 
 @Injectable()
@@ -21,13 +21,14 @@ export class MoviesService {
     const tmdbMovieData = await this.tmdbService.getMovieDetails(movie.tmdbId);
 
     const releaseYear = Number.parseInt(
-      tmdbMovieData.release_date.split('-')[0],
+      tmdbMovieData.release_date.split('-')[0] ?? '0000',
     );
 
     const groupedCrew = groupCrewByCategory(tmdbMovieData.credits.crew);
 
-    const director = groupedCrew.find((item) => item.category === 'Director')
-      .names[0];
+    const director =
+      groupedCrew.find((item) => item.category === 'Director')?.names?.[0] ??
+      'Unknown';
 
     return {
       ...tmdbMovieData,
@@ -47,7 +48,9 @@ export class MoviesService {
     const tmdbMovieData = await this.tmdbService.getMovieDetails(tmdbId);
 
     const title = tmdbMovieData.title;
-    const year = Number.parseInt(tmdbMovieData.release_date.split('-')[0]);
+    const year = Number.parseInt(
+      tmdbMovieData.release_date.split('-')[0] ?? '0000',
+    );
 
     const canonicalSlug = createMovieSlug(title, year);
 

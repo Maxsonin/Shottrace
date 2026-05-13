@@ -1,6 +1,6 @@
 {
-  "$schema": "https://turborepo.com/schema.json",
-  "globalDependencies": ["**/.env.*local"],
+  "$schema": "./node_modules/turbo/schema.json",
+  "globalDependencies": ["**/.env", "**/.env.*local"],
   "tasks": {
     "dev": {
       "cache": false,
@@ -9,9 +9,6 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
-    },
-    "lint": {},
-    "test": {},
-    "test:e2e": {}
+    }
   }
 }

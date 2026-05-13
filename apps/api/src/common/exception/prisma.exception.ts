@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { STATUS_CODES } from 'http';
-import { PrismaClientKnownRequestError } from 'prisma/client/generated/internal/prismaNamespace';
-import { ErrorResponseDto } from 'src/common/dto/default-error.dto';
+import { ErrorResponseDto } from '../dto/default-error.dto';
+import { PrismaClientKnownRequestError } from '../../generated/prisma/internal/prismaNamespace';
 
 // Map Prisma error codes to HTTP status codes and a generic error message
 export const errorMap: Record<string, { status: number; message: string }> = {

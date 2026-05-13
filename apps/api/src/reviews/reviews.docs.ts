@@ -8,7 +8,7 @@ import {
   UpdateReviewResponseDto,
   VoteDto,
 } from '@repo/api';
-import { ApiDocConfig } from 'src/common/decorators/api-doc.decorator';
+import { ApiDocConfig } from '../common/decorators/api-doc.decorator';
 
 export const createReviewDocs: ApiDocConfig<CreateReviewDto, ReviewDto> = {
   summary: 'Create a review for a movie',

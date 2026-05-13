@@ -1,4 +1,4 @@
-import { Crew } from 'src/tmdb/types/tmdb.type';
+import { Crew } from '../../tmdb/types/tmdb.type';
 
 export interface GroupedCrewItem {
   category: string;

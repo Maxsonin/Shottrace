@@ -1,36 +1,35 @@
-import { TestUsers } from '../src/config/test-user';
+import 'dotenv/config';
+import { PrismaClient } from '../src/generated/prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 import { hash } from '../src/common/utils/hash.util';
-import { PrismaClient } from './client/generated/client';
-import { isDev } from '../src/common/utils/env.util';
+import { TestUsers } from '../src/config/test-user';
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg(process.env.DATABASE_URL!);
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  if (isDev) {
-    const { email, username, password } = TestUsers.default;
-    const existing = await prisma.user.findUnique({ where: { email } });
+  const { email, username, password } = TestUsers.default;
+  const existing = await prisma.user.findUnique({ where: { email } });
 
-    if (!existing) {
-      await prisma.user.create({
-        data: {
-          email,
-          username,
-          passwordHash: await hash(password),
-        },
-      });
-      console.log(`✅ Test user created: ${email}`);
-    } else {
-      console.log('ℹ Test user already exists, skipping');
-    }
+  if (!existing) {
+    await prisma.user.create({
+      data: {
+        email,
+        username,
+        passwordHash: await hash(password),
+      },
+    });
+    console.log(`✅ Test user created: ${email}`);
+  } else {
+    console.log('ℹ Test user already exists, skipping');
   }
 }
 
 main()
-  .then(async () => {
-    await prisma.$disconnect();
-  })
-  .catch(async (e) => {
-    console.error(e);
-    await prisma.$disconnect();
+  .catch((e) => {
+    console.error('❌ Error during seeding:', e);
     process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
   });

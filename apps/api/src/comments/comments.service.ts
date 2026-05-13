@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { VotesService } from 'src/votes/vote.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { VotesService } from '../votes/vote.service';
 import { CommentDto, CreateCommentDto, UpdateCommentDto } from '@repo/api';
-import { toDto } from 'src/common/utils/to-dto.util';
+import { toDto } from '../common/utils/to-dto.util';
 import { SortOptions } from '@repo/api';
-import { Comment } from 'prisma/client/generated/client';
+import { Comment } from '../generated/prisma/client';
 
 @Injectable()
 export class CommentsService {

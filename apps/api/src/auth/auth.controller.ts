@@ -10,11 +10,9 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { Response } from 'express';
+import type { Response } from 'express';
 
 import { SignUpDto, UserDto } from '@repo/api';
-import { User } from 'prisma/client/generated/client';
-
 import { AuthService } from './services/auth.service';
 import { RefreshDocs, SignInDocs, SignUpDocs } from './auth.docs';
 
@@ -25,6 +23,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { JwtRefreshAuthGuard } from '../common/guards/jwt-refresh-auth.guard';
 import { LocalAuthGuard } from '../common/guards/local-auth.guard';
 import { toDto } from '../common/utils/to-dto.util';
+import type { User } from '../generated/prisma/client';
 
 @Controller('auth')
 export class AuthController {
@@ -34,7 +33,7 @@ export class AuthController {
     private readonly configService: ConfigService,
     private readonly authService: AuthService,
   ) {
-    this.redirectUrl = this.configService.getOrThrow('AUTH_UI_REDIRECT');
+    this.redirectUrl = this.configService.getOrThrow('GOOGLE_UI_REDIRECT_URI');
   }
 
   @ApiDoc(SignInDocs)

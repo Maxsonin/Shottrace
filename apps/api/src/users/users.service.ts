@@ -1,8 +1,8 @@
 import { ConflictException, Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { hash } from '../common/utils/hash.util';
-import { PrismaClientKnownRequestError } from 'prisma/client/generated/internal/prismaNamespace';
 import { SignUpDto } from '@repo/api';
+import { PrismaClientKnownRequestError } from '../generated/prisma/internal/prismaNamespace';
 
 @Injectable()
 export class UsersService {
@@ -22,9 +22,9 @@ export class UsersService {
         err instanceof PrismaClientKnownRequestError &&
         err.code === 'P2002'
       ) {
-        if (err.meta.target == 'email')
+        if (err.meta?.target == 'email')
           throw new ConflictException('Email already exists');
-        if (err.meta.target == 'username')
+        if (err.meta?.target == 'username')
           throw new ConflictException('Username already exists');
       }
       throw err;

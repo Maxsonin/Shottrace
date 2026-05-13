@@ -55,7 +55,7 @@ export class VotesService {
       const review = await this.prisma.review.findUnique({
         where: { id: reviewId },
       });
-      return { reviewId, userVote: value, totalVotes: review.totalVotes };
+      return { reviewId, userVote: value, totalVotes: review!.totalVotes };
     }
 
     // Change existing vote
@@ -123,7 +123,7 @@ export class VotesService {
       const comment = await this.prisma.comment.findUnique({
         where: { id: commentId },
       });
-      return { commentId, userVote: value, totalVotes: comment.totalVotes };
+      return { commentId, userVote: value, totalVotes: comment!.totalVotes };
     }
 
     // Change existing vote

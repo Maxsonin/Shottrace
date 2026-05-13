@@ -8,22 +8,24 @@ import { TmdbMovie } from './types/tmdb.type';
 
 @Injectable()
 export class TmdbService {
-  private readonly baseUrl = 'https://api.themoviedb.org/3'; //TODO: move to config
-  private readonly apiKey: string;
+  private readonly tmdbBaseUrl: string;
+  private readonly tmdbApiKey: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.apiKey = this.configService.getOrThrow('TMDB_API_KEY');
+    this.tmdbBaseUrl = this.configService.getOrThrow<string>('TMDB_BASE_URL');
+    this.tmdbApiKey = this.configService.getOrThrow<string>('TMDB_API_KEY');
   }
 
   // TODO: can hang forever, add timeout (add httpService?)
   async getMovieDetails(tmdbId: number): Promise<TmdbMovie> {
     try {
-      const url = `${this.baseUrl}/movie/${tmdbId}?append_to_response=credits&language=en-US`;
+      const url = `${this.tmdbBaseUrl}/movie/${tmdbId}?append_to_response=credits&language=en-US`;
+
       const res = await fetch(url, {
         method: 'GET',
         headers: {
           accept: 'application/json',
-          Authorization: `Bearer ${this.apiKey}`,
+          Authorization: `Bearer ${this.tmdbApiKey}`,
         },
       });
 

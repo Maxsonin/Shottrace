@@ -1,9 +1,9 @@
 import { Controller, Get, HttpStatus, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { User } from 'prisma/client/generated/client';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { ApiDoc } from 'src/common/decorators/api-doc.decorator';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import type { User } from '../generated/prisma/client';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { ApiDoc } from '../common/decorators/api-doc.decorator';
 import { UserDto } from '@repo/api';
 
 @Controller('users')

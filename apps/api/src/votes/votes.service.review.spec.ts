@@ -2,9 +2,9 @@ import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { Test } from '@nestjs/testing';
 import { VotesService } from './vote.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { Vote } from 'prisma/client/generated/client';
 import { createMock } from '../../test/utils/create-mock';
 import { ReviewVoteResponseDto } from '@repo/api';
+import { Vote } from '../generated/prisma/client';
 
 describe('VotesService - Reviews', () => {
   let voteService: VotesService;
