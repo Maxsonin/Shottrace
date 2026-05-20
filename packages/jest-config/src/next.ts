@@ -10,7 +10,11 @@ const createJestConfig = nextJest({
 
 const config = {
   ...baseConfig,
-  moduleFileExtensions: [...baseConfig.moduleFileExtensions, 'jsx', 'tsx'],
+  moduleFileExtensions: [
+    ...(baseConfig.moduleFileExtensions ?? []),
+    'jsx',
+    'tsx',
+  ],
 } as const satisfies Config;
 
 const nextConfig = createJestConfig(config);

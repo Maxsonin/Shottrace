@@ -2,14 +2,13 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
     "target": "ES2023",
-    "module": "NodeNext",
+    "module": "commonjs",
     "strictNullChecks": true,
 
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
 
     "moduleDetection": "force",
-    "moduleResolution": "NodeNext",
     "resolveJsonModule": true,
 
     "skipLibCheck": true,
