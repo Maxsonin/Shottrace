@@ -3,48 +3,29 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { isAxiosError } from 'axios';
+
+import { TmdbClient } from './tmdb.client';
 import { TmdbMovie } from './types/tmdb.type';
 
 @Injectable()
 export class TmdbService {
-  private readonly tmdbBaseUrl: string;
-  private readonly tmdbApiKey: string;
+  constructor(private readonly tmdbClient: TmdbClient) {}
 
-  constructor(private readonly configService: ConfigService) {
-    this.tmdbBaseUrl = this.configService.getOrThrow<string>('TMDB_BASE_URL');
-    this.tmdbApiKey = this.configService.getOrThrow<string>('TMDB_API_KEY');
-  }
-
-  // TODO: can hang forever, add timeout (add httpService?)
   async getMovieDetails(tmdbId: number): Promise<TmdbMovie> {
     try {
-      const url = `${this.tmdbBaseUrl}/movie/${tmdbId}?append_to_response=credits&language=en-US`;
+      return await this.tmdbClient.getMovieDetails(tmdbId);
+    } catch (error: unknown) {
+      if (isAxiosError(error)) {
+        const status = error.response?.status;
 
-      const res = await fetch(url, {
-        method: 'GET',
-        headers: {
-          accept: 'application/json',
-          Authorization: `Bearer ${this.tmdbApiKey}`,
-        },
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        // TODO: incorrect error handling
-        if (data.status_code === 34) {
+        if (status === 404) {
           throw new NotFoundException(`Movie with TMDB ID ${tmdbId} not found`);
         }
-        throw new InternalServerErrorException(
-          `Something went wrong, please try again later`,
-        );
       }
 
-      return data as TmdbMovie;
-    } catch (error) {
       throw new InternalServerErrorException(
-        'Something went wrong, please try again later',
+        'Failed to fetch movie details from TMDB',
       );
     }
   }

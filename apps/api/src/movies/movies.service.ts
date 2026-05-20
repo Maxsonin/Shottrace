@@ -21,10 +21,12 @@ export class MoviesService {
     const tmdbMovieData = await this.tmdbService.getMovieDetails(movie.tmdbId);
 
     const releaseYear = Number.parseInt(
-      tmdbMovieData.release_date.split('-')[0] ?? '0000',
+      tmdbMovieData.release_date?.split('-')[0] ?? '0000',
     );
 
-    const groupedCrew = groupCrewByCategory(tmdbMovieData.credits.crew);
+    const credits = tmdbMovieData.credits ?? { crew: [], cast: [] };
+
+    const groupedCrew = groupCrewByCategory(credits.crew ?? []);
 
     const director =
       groupedCrew.find((item) => item.category === 'Director')?.names?.[0] ??
@@ -36,7 +38,7 @@ export class MoviesService {
       releaseYear,
       director,
       id: movie.id,
-      cast: tmdbMovieData.credits.cast,
+      cast: credits.cast,
       crew: groupedCrew,
     };
   }
@@ -49,7 +51,7 @@ export class MoviesService {
 
     const title = tmdbMovieData.title;
     const year = Number.parseInt(
-      tmdbMovieData.release_date.split('-')[0] ?? '0000',
+      tmdbMovieData.release_date?.split('-')[0] ?? '0000',
     );
 
     const canonicalSlug = createMovieSlug(title, year);

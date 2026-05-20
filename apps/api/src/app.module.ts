@@ -8,6 +8,7 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { CommentsModule } from './comments/comments.module';
 import { HealthModule } from './health/health.module';
 import { validate } from './config/env.config';
+import { TmdbModule } from './tmdb/tmdb.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { validate } from './config/env.config';
     ReviewsModule,
     CommentsModule,
     HealthModule,
+    TmdbModule,
   ],
 })
 export class AppModule {}

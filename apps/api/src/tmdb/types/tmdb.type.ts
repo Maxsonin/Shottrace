@@ -1,24 +1,24 @@
-export interface TmdbMovie {
+export type TmdbMovie = {
   id: number;
   title: string;
-  release_date: string; // "YYYY-MM-DD"
+  release_date?: string; // "YYYY-MM-DD"
   overview?: string;
   tagline?: string;
   poster_path?: string;
   backdrop_path?: string;
-  runtime?: number;
-  credits: { cast: Cast[]; crew: Crew[] };
-}
+  runtime?: number; // min
+  credits?: { cast: Cast[]; crew: Crew[] };
+};
 
-export interface Cast {
+export type Cast = {
   id: number;
   name: string;
   character: string;
-}
+};
 
-export interface Crew {
+export type Crew = {
   id: number;
   name: string;
   job: string;
   department: string;
-}
+};
