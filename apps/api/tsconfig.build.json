@@ -1,9 +1,11 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": "@repo/typescript-config/nestjs.json",
   "compilerOptions": {
     "noEmit": false,
     "rootDir": "./src",
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "types": ["node"]
   },
-  "exclude": ["**/*.spec.ts", "**/*.test.ts"]
+  "include": ["src/**/*"],
+  "exclude": ["**/*.spec.ts"]
 }

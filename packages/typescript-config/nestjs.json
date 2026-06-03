@@ -6,7 +6,6 @@
     "experimentalDecorators": true,
 
     "sourceMap": true,
-    "outDir": "./dist",
     "removeComments": true,
 
     "noImplicitAny": false,
@@ -16,6 +15,6 @@
     "allowSyntheticDefaultImports": true,
     "strictPropertyInitialization": false,
 
-    "types": ["jest", "node"]
+    "types": ["node"]
   }
 }

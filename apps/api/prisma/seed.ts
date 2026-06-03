@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { PrismaClient } from '../src/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { hash } from '../src/shared/utils/hash.util';
-import { TestUsers } from '../test/fixtures/test-user';
+import { TestUsers } from '../src/shared/constants/test-users';
 
 const adapter = new PrismaPg(process.env.DATABASE_URL!);
 const prisma = new PrismaClient({ adapter });

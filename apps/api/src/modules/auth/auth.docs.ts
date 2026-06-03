@@ -3,7 +3,7 @@ import { HttpStatus } from '@nestjs/common';
 import { SignInDto, SignUpDto, UserDto } from '@repo/api';
 
 import { ApiDocConfig } from '../../shared/decorators/api-doc.decorator';
-import { TestUsers } from '../../../../test/fixtures/test-user';
+import { TestUsers } from '../../shared/constants/test-users';
 
 export const SignInDocs: ApiDocConfig<SignInDto, UserDto> = {
   summary: 'Sign in',
