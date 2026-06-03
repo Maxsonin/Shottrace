@@ -42,7 +42,7 @@ export default async function Image({ params }: { params: { slug: string } }) {
             {movie.title} ({movie.releaseYear})
           </h1>
           <h2 style={{ fontSize: 36, margin: '0 20px 40px' }}>
-            Directed by {movie.director}
+            Directed by {movie.director?.join(', ')}
           </h2>
         </div>
       </div>

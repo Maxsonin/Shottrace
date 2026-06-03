@@ -30,8 +30,8 @@ export class MovieDto {
   @ApiProperty({ required: false })
   year?: number;
 
-  @ApiProperty({ required: false })
-  director?: string;
+  @ApiProperty({ type: [String], required: false })
+  director?: string[];
 
   @ApiProperty({ type: [CastDto], required: false })
   cast?: CastDto[];

@@ -4,8 +4,7 @@ import type { Movie } from '../../../generated/prisma/client';
 
 import { TmdbMovie } from '../../../infrastructure/clients/tmdb/types/tmdbMovie.type';
 
-import { extractYear } from './extract-year';
-import { groupCrewByCategory } from './group-crew';
+import { extractYear, groupCrewByCategory } from './tmdb-field.mappers';
 
 export function toMovieDto(movie: Movie, tmdbMovie: TmdbMovie): MovieDto {
   const year = extractYear(tmdbMovie.release_date);
@@ -14,9 +13,8 @@ export function toMovieDto(movie: Movie, tmdbMovie: TmdbMovie): MovieDto {
     ? groupCrewByCategory(tmdbMovie.credits.crew)
     : [];
 
-  const director =
-    groupedCrew.find((item) => item.category === 'Director')?.names?.[0] ??
-    undefined;
+  const director = groupedCrew.find((item) => item.category === 'Director')
+    ?.names;
 
   return {
     id: movie.id,

@@ -5,7 +5,7 @@ import { MovieDto } from '@repo/api';
 import { MoviesRepository } from './repositories/movie.repository';
 
 import { toMovieDto } from './helpers/tmdb-movie.mapper';
-import { extractYear } from './helpers/extract-year';
+import { extractYear } from './helpers/tmdb-field.mappers';
 import { TmdbService } from '../../infrastructure/clients/tmdb/tmdb.service';
 
 @Injectable()

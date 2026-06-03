@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         ` (` +
         movie.releaseYear +
         `) directed by ` +
-        movie.director +
+        movie.director?.join(', ') +
         ` | Shottrace`,
       description: movie.overview,
 

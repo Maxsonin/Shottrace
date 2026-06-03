@@ -1,16 +1,18 @@
 import { CrewDto } from '@repo/api/movies/dto/credits.dto';
 import { Crew } from '../../../infrastructure/clients/tmdb/types/tmdbMovie.type';
 
-const categoryMap: Record<string, string> = {
-  Director: 'Director',
-  Producer: 'Producers',
+// prettier-ignore
+// Maps a raw TMDB crew job to the display category we group crew members under
+const JOB_TO_CATEGORY: Record<string, string> = {
+  'Director': 'Director',
+  'Producer': 'Producers',
   'Executive Producer': 'Exec. Producer',
   'Associate Producer': 'Producers',
-  Screenplay: 'Writer',
-  Novel: 'Original Writer',
-  Casting: 'Casting',
+  'Screenplay': 'Writer',
+  'Novel': 'Original Writer',
+  'Casting': 'Casting',
   'Casting Associate': 'Casting',
-  Editor: 'Editor',
+  'Editor': 'Editor',
   'First Assistant Editor': 'Editor',
   'Director of Photography': 'Cinematography',
   'First Assistant Director': 'Asst. Directors',
@@ -31,10 +33,10 @@ const categoryMap: Record<string, string> = {
   'Set Decoration': 'Set Decoration',
   'Special Effects Coordinator': 'Special Effects',
   'Special Effects Technician': 'Special Effects',
-  VisualEffects: 'Visual Effects',
+  'VisualEffects': 'Visual Effects',
   'Visual Effects Supervisor': 'Visual Effects',
   'Visual Effects Producer': 'Visual Effects',
-  Stunts: 'Stunts',
+  'Stunts': 'Stunts',
   'Fight Choreographer': 'Stunts',
   'Utility Stunts': 'Stunts',
   'Stunt Coordinator': 'Stunts',
@@ -43,26 +45,30 @@ const categoryMap: Record<string, string> = {
   'Makeup Artist': 'Makeup',
   'Key Makeup Artist': 'Makeup',
   'Prosthetic Makeup Artist': 'Makeup',
-  Hairstylist: 'Hairstyling',
+  'Hairstylist': 'Hairstyling',
   'Key Hair Stylist': 'Hairstyling',
 };
 
 export function groupCrewByCategory(crew: Crew[]): CrewDto[] {
-  const groupedMap: Record<string, string[]> = {};
+  const namesByCategory = new Map<string, string[]>();
 
-  crew.forEach((member: Crew) => {
-    const category = categoryMap[member.job];
-    if (!category) return;
-    if (!groupedMap[category]) groupedMap[category] = [];
-    groupedMap[category].push(member.name);
-  });
+  for (const member of crew) {
+    const category = JOB_TO_CATEGORY[member.job];
+    if (!category) continue;
 
-  const groupedArray: CrewDto[] = Object.entries(groupedMap).map(
-    ([category, names]) => ({
-      category,
-      names: names.sort((a, b) => a.localeCompare(b)),
-    }),
-  );
+    const existingNames = namesByCategory.get(category) ?? [];
+    namesByCategory.set(category, [...existingNames, member.name]);
+  }
 
-  return groupedArray;
+  return Array.from(namesByCategory, ([category, names]) => ({
+    category,
+    names: [...names].sort((a, b) => a.localeCompare(b)),
+  }));
+}
+
+export function extractYear(releaseDate?: string): number | undefined {
+  if (!releaseDate) return undefined;
+
+  const year = Number(releaseDate.slice(0, 4));
+  return Number.isNaN(year) ? undefined : year;
 }

@@ -3,7 +3,7 @@ import Link from 'next/link';
 type MovieDetailsProps = {
   title: string;
   releaseYear?: number;
-  director?: string;
+  director?: string[];
 };
 
 export default function MovieHeader({
@@ -19,12 +19,17 @@ export default function MovieHeader({
           {releaseYear}
         </Link>
       )}
-      {director && (
+      {director && director.length > 0 && (
         <>
           <span>Directed by </span>
-          <Link href={`/director/${director}`} className="underline">
-            {director}
-          </Link>
+          {director.map((name, index) => (
+            <span key={name}>
+              <Link href={`/director/${name}`} className="underline">
+                {name}
+              </Link>
+              {index < director.length - 1 && ', '}
+            </span>
+          ))}
         </>
       )}
     </div>
