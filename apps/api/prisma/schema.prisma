@@ -28,7 +28,7 @@ model Movie {
   id            String @id @default(uuid()) @db.Uuid
   tmdbId        Int    @unique
   title         String
-  year          Int
+  year          Int?
   canonicalSlug String @unique
 
   createdAt DateTime @default(now())

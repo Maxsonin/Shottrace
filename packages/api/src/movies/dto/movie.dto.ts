@@ -1,58 +1,86 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
+import {
+  IsArray,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
+
 import { CastDto, CrewDto } from './credits.dto';
-import { ValidateNested } from 'class-validator';
 
 export class MovieDto {
   @ApiProperty()
   @Expose()
+  @IsString()
   id: string;
 
   @ApiProperty()
-  @Expose({ name: 'tmdb_id' })
+  @Expose()
+  @IsNumber()
   tmdbId: number;
 
   @ApiProperty()
   @Expose()
+  @IsString()
   title: string;
 
   @ApiProperty({ required: false })
   @Expose()
+  @IsOptional()
+  @IsString()
   tagline?: string;
 
   @ApiProperty({ required: false })
   @Expose()
+  @IsOptional()
+  @IsString()
   overview?: string;
 
   @ApiProperty({ required: false })
-  @Expose({ name: 'poster_path' })
+  @Expose()
+  @IsOptional()
+  @IsString()
   posterPath?: string;
 
   @ApiProperty({ required: false })
-  @Expose({ name: 'backdrop_path' })
+  @Expose()
+  @IsOptional()
+  @IsString()
   backdropPath?: string;
 
   @ApiProperty({ required: false })
   @Expose()
+  @IsOptional()
+  @IsNumber()
   runtime?: number;
 
   @ApiProperty({ required: false })
   @Expose()
-  releaseYear?: number;
+  @IsOptional()
+  @IsNumber()
+  year?: number;
 
   @ApiProperty({ required: false })
   @Expose()
+  @IsOptional()
+  @IsString()
   director?: string;
 
   @ApiProperty({ type: [CastDto], required: false })
-  @Expose({ name: 'cast' })
-  @ValidateNested({ each: true })
+  @Expose()
+  @IsArray()
+  @IsOptional()
   @Type(() => CastDto)
+  @ValidateNested({ each: true })
   cast?: CastDto[];
 
   @ApiProperty({ type: [CrewDto], required: false })
-  @Expose({ name: 'crew' })
-  @ValidateNested({ each: true })
+  @Expose()
+  @IsArray()
+  @IsOptional()
   @Type(() => CrewDto)
+  @ValidateNested({ each: true })
   crew?: CrewDto[];
 }

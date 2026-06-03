@@ -1,14 +1,13 @@
 import { Module } from '@nestjs/common';
-import { UsersModule } from './users/users.module';
-import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
-import { PrismaModule } from './prisma/prisma.module';
-import { MoviesModule } from './movies/movies.module';
-import { ReviewsModule } from './reviews/reviews.module';
-import { CommentsModule } from './comments/comments.module';
-import { HealthModule } from './health/health.module';
-import { validate } from './config/env.config';
-import { TmdbModule } from './tmdb/tmdb.module';
+import { PrismaModule } from './infrastructure/prisma/prisma.module';
+import { MoviesModule } from './modules/movies/movies.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
+import { CommentsModule } from './modules/comments/comments.module';
+import { HealthModule } from './infrastructure/health/health.module';
+import { validate } from './infrastructure/config/env.config';
 
 @Module({
   imports: [
@@ -16,14 +15,16 @@ import { TmdbModule } from './tmdb/tmdb.module';
       isGlobal: true,
       validate,
     }),
+
+    PrismaModule,
+    HealthModule,
+
     UsersModule,
     AuthModule,
-    PrismaModule,
+
     MoviesModule,
     ReviewsModule,
     CommentsModule,
-    HealthModule,
-    TmdbModule,
   ],
 })
 export class AppModule {}

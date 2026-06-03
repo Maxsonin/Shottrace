@@ -1,37 +1,55 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
-import { ValidationPipe } from '@nestjs/common';
-import { setupSwagger } from './setup-swagger';
-import { PrismaExceptionFilter } from './common/exception/prisma.exception';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { PrismaExceptionFilter } from './shared/exception/prisma.exception';
+import {
+  getSwaggerConfig,
+  swaggerCustomOptions,
+} from './infrastructure/config/swagger.config';
+import { SwaggerModule } from '@nestjs/swagger';
 
-const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
-const frontendUrl = process.env.FRONTEND_URL;
+function setupValidation(app: INestApplication) {
+  const requestValidationPipe = new ValidationPipe({
+    whitelist: true, // Strips unknown properties
+    forbidNonWhitelisted: true, // Throws an error if unknown properties are sent
+    transform: true, // Converts payload into a DTO class instance (will also perform conversion of primitive types)
+  });
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  app.useGlobalPipes(requestValidationPipe);
+}
+
+function setupCors(app: INestApplication, configService: ConfigService) {
+  const frontendUrl = configService.getOrThrow<string>('FRONTEND_URL');
 
   app.enableCors({
     origin: frontendUrl,
     credentials: true,
   });
-  app.use(cookieParser());
+}
 
-  // Validation
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true, // Strip unknown properties
-      forbidNonWhitelisted: true, // Throw error on unknown properties
-      transform: true, // Automatically transform payloads to DTO instances
-      transformOptions: {
-        enableImplicitConversion: true, // Automatically convert types based on TypeScript types
-      },
-    }),
-  );
+function setupSwagger(app: INestApplication) {
+  const config = getSwaggerConfig();
+
+  const document = SwaggerModule.createDocument(app, config);
+
+  SwaggerModule.setup('docs', app, document, swaggerCustomOptions);
+}
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService);
+
+  setupValidation(app);
+  setupCors(app, configService);
+  setupSwagger(app);
+
+  app.use(cookieParser());
 
   app.useGlobalFilters(new PrismaExceptionFilter());
 
-  setupSwagger(app);
+  const port = configService.getOrThrow<number>('PORT');
 
   await app.listen(port, '0.0.0.0');
   console.log(`NestJS is running on port ${port}`);
