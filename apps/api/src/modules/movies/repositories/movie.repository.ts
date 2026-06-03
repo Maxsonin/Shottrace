@@ -1,54 +1,49 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 
 import { PrismaService } from '../../../infrastructure/prisma/prisma.service';
-import { PrismaClientKnownRequestError } from '../../../generated/prisma/internal/prismaNamespace';
+import { Prisma, type Movie } from '../../../generated/prisma/client';
 
 import type { CreateMovieData } from '../types/createMovieData';
 
 import { createMovieSlug } from '../helpers/create-slug';
-import { randomBytes } from 'crypto';
 
 @Injectable()
 export class MoviesRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  private readonly MAX_SLUG_ATTEMPTS = 15;
-
-  findBySlug(slug: string) {
+  findBySlug(slug: string): Promise<Movie | null> {
     return this.prisma.movie.findUnique({
       where: { canonicalSlug: slug },
     });
   }
 
-  findByTmdbId(tmdbId: number) {
+  findByTmdbId(tmdbId: number): Promise<Movie | null> {
     return this.prisma.movie.findUnique({
       where: { tmdbId },
     });
   }
 
-  async create(data: CreateMovieData) {
+  async create(data: CreateMovieData): Promise<Movie> {
     const baseSlug = createMovieSlug({ title: data.title, year: data.year });
+    const slugCandidates = [baseSlug, `${baseSlug}-${data.tmdbId}`];
 
-    for (let attempt = 0; attempt <= this.MAX_SLUG_ATTEMPTS; attempt++) {
-      const slug =
-        attempt === 0
-          ? baseSlug
-          : `${baseSlug}-${randomBytes(3).toString('hex')}`;
-
+    for (const canonicalSlug of slugCandidates) {
       try {
         return await this.prisma.movie.create({
-          data: { ...data, canonicalSlug: slug },
+          data: { ...data, canonicalSlug },
         });
-      } catch (e) {
-        if (
-          !(e instanceof PrismaClientKnownRequestError) ||
-          e.code !== 'P2002'
-        ) {
-          throw e;
+      } catch (error: unknown) {
+        const isSlugConflict =
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === 'P2002' &&
+          String(error.meta?.target ?? '').includes('canonicalSlug');
+
+        if (!isSlugConflict) {
+          throw error;
         }
       }
     }
 
-    throw new InternalServerErrorException(`Failed to create a movie`);
+    throw new InternalServerErrorException('Failed to create a movie');
   }
 }

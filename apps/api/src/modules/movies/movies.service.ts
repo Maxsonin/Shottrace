@@ -2,6 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { MovieDto } from '@repo/api';
 
+import type { Movie } from '../../generated/prisma/client';
+
 import { MoviesRepository } from './repositories/movie.repository';
 
 import { toMovieDto } from './helpers/tmdb-movie.mapper';
@@ -29,7 +31,7 @@ export class MoviesService {
     return toMovieDto(movie, tmdbMovie);
   }
 
-  async getOrCreateByTmdbId(tmdbId: number) {
+  async getOrCreateByTmdbId(tmdbId: number): Promise<Movie> {
     const existing = await this.moviesRepository.findByTmdbId(tmdbId);
     if (existing) return existing;
 
