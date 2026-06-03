@@ -1,5 +1,5 @@
 import { cache } from 'react';
-import { MovieDto as Movie } from '@repo/api';
+import type { MovieDto as Movie } from '@repo/api';
 import { apiFetch } from './client';
 
 export const movieApi = {

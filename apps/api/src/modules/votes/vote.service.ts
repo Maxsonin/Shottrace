@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { CommentVoteResponseDto, ReviewVoteResponseDto } from '@repo/api';
 
+export type VoteValue = 1 | -1 | 0;
+
 @Injectable()
 export class VotesService {
   constructor(private readonly prisma: PrismaService) {}
@@ -149,7 +151,7 @@ export class VotesService {
   async getUserVotesForReviews(
     reviewIds: string[],
     userId: string | null,
-  ): Promise<Map<string, number>> {
+  ): Promise<Map<string, VoteValue>> {
     return userId
       ? new Map(
           (
@@ -157,26 +159,29 @@ export class VotesService {
               where: { userId, reviewId: { in: reviewIds } },
               select: { reviewId: true, value: true },
             })
-          ).map((vote) => [vote.reviewId!, vote.value]),
+          ).map((vote) => [vote.reviewId!, vote.value as VoteValue]),
         )
-      : new Map<string, number>();
+      : new Map<string, VoteValue>();
   }
 
   async getUserVotesForComments(
     commentIds: string[],
     userId: string,
-  ): Promise<Map<string, number>> {
+  ): Promise<Map<string, VoteValue>> {
     return new Map(
       (
         await this.prisma.vote.findMany({
           where: { userId, commentId: { in: commentIds } },
           select: { commentId: true, value: true },
         })
-      ).map((vote) => [vote.commentId!, vote.value]),
+      ).map((vote) => [vote.commentId!, vote.value as VoteValue]),
     );
   }
 
-  async getUserReviewVote(reviewId: string, userId: string) {
+  async getUserReviewVote(
+    reviewId: string,
+    userId: string,
+  ): Promise<VoteValue> {
     const vote = await this.prisma.vote.findUnique({
       where: { userId_reviewId: { userId, reviewId } },
       select: { value: true },
@@ -184,7 +189,7 @@ export class VotesService {
 
     if (!vote) return 0;
 
-    return vote.value;
+    return vote.value as VoteValue;
   }
 
   private calculateChangeInTotalVotes(

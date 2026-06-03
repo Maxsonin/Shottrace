@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CommentsService } from '../comments/comments.service';
-import { toResponse } from '../../shared/utils/to-response.util';
+import { serialize } from '../../shared/utils/serialize.util';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { VotesService } from '../votes/vote.service';
 import { ReviewDto } from '@repo/api';
@@ -31,9 +31,9 @@ export class ReviewsService {
       },
     });
 
-    return toResponse(ReviewDto, {
+    return serialize(ReviewDto, {
       ...createdReview,
-      comments: [],
+      totalComments: 0,
       userVote: 0,
     });
   }
@@ -101,7 +101,7 @@ export class ReviewsService {
     ]);
 
     const enrichedReviews = reviews.map((review) =>
-      toResponse(ReviewDto, {
+      serialize(ReviewDto, {
         ...review,
         //comments: reviewCommentsMap.get(review.id),
         totalComments: review._count.comments,
@@ -109,7 +109,7 @@ export class ReviewsService {
       }),
     );
 
-    return toResponse(PaginatedReviewsDto, {
+    return serialize(PaginatedReviewsDto, {
       reviews: enrichedReviews,
       totalPages: Math.ceil(total / limit),
     });
@@ -145,7 +145,7 @@ export class ReviewsService {
       userId,
     );
 
-    return toResponse(ReviewDto, {
+    return serialize(ReviewDto, {
       ...userReview,
       totalComments: userReview._count.comments,
       // comments,

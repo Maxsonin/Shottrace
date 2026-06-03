@@ -1,12 +1,10 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+
+import { MovieDto } from '@repo/api';
 
 import { MoviesRepository } from './repositories/movie.repository';
 
-import { mapTmdbToDomain } from './helpers/tmdb-movie.mapper';
+import { toMovieDto } from './helpers/tmdb-movie.mapper';
 import { extractYear } from './helpers/extract-year';
 import { TmdbService } from '../../infrastructure/clients/tmdb/tmdb.service';
 
@@ -17,18 +15,18 @@ export class MoviesService {
     private readonly tmdbService: TmdbService,
   ) {}
 
-  async getDetailsBySlug(slug: string) {
+  async getDetailsBySlug(slug: string): Promise<MovieDto> {
     const movie = await this.moviesRepository.findBySlug(slug);
 
     if (!movie) {
-      throw new NotFoundException('Movie ' + slug + 'is not found.');
+      throw new NotFoundException(`Movie ${slug} is not found.`);
     }
 
     const tmdbMovie = await this.tmdbService.getMovieDetails(movie.tmdbId, {
       appendToResponse: ['credits'],
     });
 
-    return mapTmdbToDomain(tmdbMovie);
+    return toMovieDto(movie, tmdbMovie);
   }
 
   async getOrCreateByTmdbId(tmdbId: number) {

@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
-import { IsIn, IsInt, IsString } from 'class-validator';
+import { IsIn, IsInt } from 'class-validator';
 
+// Request body — validated by the global ValidationPipe (untrusted input).
 export class VoteDto {
   @ApiProperty({
     enum: [1, -1, 0],
@@ -15,33 +16,27 @@ export class VoteDto {
 export class ReviewVoteResponseDto {
   @ApiProperty({ type: 'string', format: 'uuid' })
   @Expose()
-  @IsString()
   reviewId: string;
 
   @ApiProperty({ enum: [1, -1, 0] })
   @Expose()
-  @IsInt()
   userVote: 1 | -1 | 0;
 
   @ApiProperty()
   @Expose()
-  @IsInt()
   totalVotes: number;
 }
 
 export class CommentVoteResponseDto {
   @ApiProperty({ type: 'string', format: 'uuid' })
   @Expose()
-  @IsString()
   commentId: string;
 
   @ApiProperty({ enum: [1, -1, 0] })
   @Expose()
-  @IsInt()
   userVote: 1 | -1 | 0;
 
   @ApiProperty()
   @Expose()
-  @IsInt()
   totalVotes: number;
 }

@@ -5,8 +5,6 @@ import { MovieDto } from '@repo/api';
 import { ApiDoc } from '../../shared/decorators/api-doc.decorator';
 import { addMovieAndRedirectDocs, getMovieBySlugDocs } from './movies.docs';
 
-import { toResponse } from '../../shared/utils/to-response.util';
-
 import { MoviesService } from './movies.service';
 
 @Controller()
@@ -16,8 +14,7 @@ export class MoviesController {
   @ApiDoc(getMovieBySlugDocs)
   @Get('movie/:slug')
   async getMovieBySlug(@Param('slug') slug: string): Promise<MovieDto> {
-    const movie = await this.moviesService.getDetailsBySlug(slug);
-    return toResponse(MovieDto, movie);
+    return this.moviesService.getDetailsBySlug(slug);
   }
 
   @ApiDoc(addMovieAndRedirectDocs)

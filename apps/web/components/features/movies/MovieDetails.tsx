@@ -1,4 +1,4 @@
-import { MovieDto as Movie } from '@repo/api';
+import type { MovieDto as Movie } from '@repo/api';
 import Image from 'next/image';
 import MovieHeader from './MovieHeader';
 import MovieTabs from './MovieTabs';

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { VotesService } from '../votes/vote.service';
 import { CommentDto, CreateCommentDto, UpdateCommentDto } from '@repo/api';
-import { toResponse } from '../../shared/utils/to-response.util';
+import { serialize } from '../../shared/utils/serialize.util';
 import { SortOptions } from '@repo/api';
 import { Comment } from '../../generated/prisma/client';
 
@@ -30,7 +30,7 @@ export class CommentsService {
 
     return await Promise.all(
       comments.map((comment) =>
-        toResponse(CommentDto, {
+        serialize(CommentDto, {
           ...comment,
           userVote: 0,
           hasMore: false,
@@ -52,9 +52,10 @@ export class CommentsService {
       },
     });
 
-    return toResponse(CommentDto, {
+    return serialize(CommentDto, {
       ...newComment,
       userVote: 0,
+      hasMore: false,
     });
   }
 
@@ -134,7 +135,7 @@ export class CommentsService {
 
     return Promise.all(
       comments.map((comment) =>
-        toResponse(CommentDto, {
+        serialize(CommentDto, {
           ...comment,
           userVote: userVotesMap.get(comment.id) ?? 0,
           hasMore: false, // TODO: implement pagination

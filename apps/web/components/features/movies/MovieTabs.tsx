@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/ui/tabs';
-import { MovieDto as Movie } from '@repo/api';
+import type { MovieDto as Movie } from '@repo/api';
 import CastList from './CastList';
 import CrewList from './CrewList';
 

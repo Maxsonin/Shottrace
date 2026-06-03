@@ -1,8 +1,13 @@
+import type { MovieDto } from '@repo/api';
+
+import type { Movie } from '../../../generated/prisma/client';
+
 import { TmdbMovie } from '../../../infrastructure/clients/tmdb/types/tmdbMovie.type';
+
 import { extractYear } from './extract-year';
 import { groupCrewByCategory } from './group-crew';
 
-export function mapTmdbToDomain(tmdbMovie: TmdbMovie) {
+export function toMovieDto(movie: Movie, tmdbMovie: TmdbMovie): MovieDto {
   const year = extractYear(tmdbMovie.release_date);
 
   const groupedCrew = tmdbMovie.credits?.crew
@@ -14,6 +19,7 @@ export function mapTmdbToDomain(tmdbMovie: TmdbMovie) {
     undefined;
 
   return {
+    id: movie.id,
     tmdbId: tmdbMovie.id,
     title: tmdbMovie.title,
     tagline: tmdbMovie.tagline,

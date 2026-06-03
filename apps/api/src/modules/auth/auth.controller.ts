@@ -22,7 +22,7 @@ import { GoogleAuthGuard } from '../../shared/guards/google-auth.guard';
 import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
 import { JwtRefreshAuthGuard } from '../../shared/guards/jwt-refresh-auth.guard';
 import { LocalAuthGuard } from '../../shared/guards/local-auth.guard';
-import { toResponse } from '../../shared/utils/to-response.util';
+import { serialize } from '../../shared/utils/serialize.util';
 import type { User } from '../../generated/prisma/client';
 
 @Controller('auth')
@@ -45,7 +45,7 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ) {
     const loggedInUser = await this.authService.login(user, response);
-    return toResponse(UserDto, loggedInUser);
+    return serialize(UserDto, loggedInUser);
   }
 
   @ApiDoc(SignUpDocs)
@@ -56,7 +56,7 @@ export class AuthController {
   ) {
     const user = await this.authService.register(createUserDto);
     const loggedInUser = await this.authService.login(user, response);
-    return toResponse(UserDto, loggedInUser);
+    return serialize(UserDto, loggedInUser);
   }
 
   @ApiDoc({
@@ -87,7 +87,7 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ) {
     const loggedInUser = await this.authService.login(user, response);
-    return toResponse(UserDto, loggedInUser);
+    return serialize(UserDto, loggedInUser);
   }
 
   @ApiDoc({
@@ -137,6 +137,6 @@ export class AuthController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   async me(@CurrentUser() user: User) {
-    return toResponse(UserDto, user);
+    return serialize(UserDto, user);
   }
 }

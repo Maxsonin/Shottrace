@@ -1,6 +1,6 @@
 import { IsIn, IsInt, IsOptional, IsString, Min } from 'class-validator';
 import { IsValidRating } from '../../validators/is-valid-rating';
-import { SortOptions } from 'reviews/types/sort';
+import { SortOptions } from '../types/sort';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class PaginatedReviewsQueryDto {
